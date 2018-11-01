@@ -1,22 +1,3 @@
-rm(list = ls())
-
-install.packages("spData",dependencies = TRUE)
-install.packages("sp",dependencies = TRUE)
-install.packages("raster", dependencies = TRUE)
-install.packages("rgdal",dependencies = TRUE)
-install.packages("rgeos",dependencies = TRUE)
-install.packages("dismo",dependencies = TRUE)
-install.packages("XML",dependencies = TRUE)
-install.packages("ggmap",dependencies = TRUE)
-install.packages("spdep",dependencies = TRUE)
-install.packages("tiff", dependencies = TRUE)
-install.packages("rtiff", dependencies = TRUE)
-install.packages("magick", dependencies = TRUE)
-install.packages("xlsx", dependencies = TRUE)
-install.packages("geosphere", dependencies = TRUE)
-install.packages("lmap",dependencies = TRUE)
-install.packages('data.table', dependencies = TRUE) #Dr. Johnson says this is better than data.frame
-
 library(spData)
 library(spdep)
 library(ggmap)
