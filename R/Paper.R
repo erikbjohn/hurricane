@@ -355,7 +355,8 @@ Cen00[, ID := .GRP, by = .(Long, Lat)]
 
 Cen60<-Cen60[dat != 0] #Remove locations where no population exist 
 
-#Distance from huricane 1 in 1960  after its first 6 hours to each centroid in that year's census 
+#Distance from huricanes in 1960 for  each centroid in that year's census 
+
 dt <- data.table()
 dts <- data.table()
 for(iRow in 1:nrow(hurr)){
@@ -377,7 +378,121 @@ ddis<-data.table::data.table(ddis)
 
 
 
-####################~~~~~~~~~~~~~~~~~~Completing dataset~~~~~~~~~~~~~~~###################
 
-ddis<-cbind(ddis, Cen60$Long,Cen60$Lat)
-colnames(ddis)<-c("distance(km)", "dat", "ID", "Long","Lat")
+
+
+##############################~~~~~~~~~~~~~Calulate the distance to centroids 1970~~~~~~~~~~~~~~~~~########################
+
+
+Cen70<-Cen70[dat != 0] #Remove locations where no population exist 
+
+#Distance from huricanes in 1970 for  each centroid in that year's census 
+
+dt <- data.table()
+dts70 <- data.table()
+for(iRow in 1:nrow(hurr)){
+  if((iRow %% 20)==0){
+    cat(iRow, 'of', nrow(hurr), '\n')
+  }
+  hurr_lat <- hurr[iRow]$Lat.N
+  hurr_long <- hurr[iRow]$Long.W
+  hurr_id <- hurr[iRow]$hurr_id
+  ddis70<- (distCosine(Cen70[,2:3], c(hurr_long, hurr_lat), r=6378137))/1000 #This finds the shortest distance between two points
+  #In meters
+  dt <- data.table(hurr_id = hurr_id, cen70_id = Cen70$ID, ddis70 )
+  dt <- dt[ddis70<500]
+  dts70 <- rbindlist(list(dts70, dt), use.names = TRUE, fill=TRUE)
+}
+#colnames(ddis)<-c("distance(km)", "dat","ID")
+
+ddis70<-data.table::data.table(ddis70)
+
+
+
+
+##############################~~~~~~~~~~~~~Calulate the distance to centroids 1980~~~~~~~~~~~~~~~~~########################
+
+
+Cen80<-Cen80[dat != 0] #Remove locations where no population exist 
+
+#Distance from huricanes in 1980 for  each centroid in that year's census 
+
+dt <- data.table()
+dts80 <- data.table()
+for(iRow in 1:nrow(hurr)){
+  if((iRow %% 20)==0){
+    cat(iRow, 'of', nrow(hurr), '\n')
+  }
+  hurr_lat <- hurr[iRow]$Lat.N
+  hurr_long <- hurr[iRow]$Long.W
+  hurr_id <- hurr[iRow]$hurr_id
+  ddis80<- (distCosine(Cen80[,2:3], c(hurr_long, hurr_lat), r=6378137))/1000 #This finds the shortest distance between two points
+  #In meters
+  dt <- data.table(hurr_id = hurr_id, cen80_id = Cen80$ID, ddis80 )
+  dt <- dt[ddis80<500]
+  dts80 <- rbindlist(list(dts80, dt), use.names = TRUE, fill=TRUE)
+}
+#colnames(ddis)<-c("distance(km)", "dat","ID")
+
+ddis80<-data.table::data.table(ddis80)
+
+
+
+
+
+##############################~~~~~~~~~~~~~Calulate the distance to centroids 1990~~~~~~~~~~~~~~~~~########################
+
+Cen90<-Cen90[dat != 0] #Remove locations where no population exist 
+
+# Distance from huricanes in 1990 for  each centroid in that year's census 
+
+dt <- data.table()
+dts90 <- data.table()
+for(iRow in 1:nrow(hurr)){
+  if((iRow %% 20)==0){
+    cat(iRow, 'of', nrow(hurr), '\n')
+  }
+  hurr_lat <- hurr[iRow]$Lat.N
+  hurr_long <- hurr[iRow]$Long.W
+  hurr_id <- hurr[iRow]$hurr_id
+  ddis90<- (distCosine(Cen90[,2:3], c(hurr_long, hurr_lat), r=6378137))/1000 #This finds the shortest distance between two points
+  #In meters
+  dt <- data.table(hurr_id = hurr_id, cen90_id = Cen90$ID, ddis90 )
+  dt <- dt[ddis90<500]
+  dts90 <- rbindlist(list(dts90, dt), use.names = TRUE, fill=TRUE)
+}
+#colnames(ddis)<-c("distance(km)", "dat","ID")
+
+ddis90<-data.table::data.table(ddis90)
+
+
+
+
+
+
+##############################~~~~~~~~~~~~~Calulate the distance to centroids 2000~~~~~~~~~~~~~~~~~########################
+
+Cen00<-Cen00[dat != 0] #Remove locations where no population exist 
+
+#Distance from huricanes in 2000 for  each centroid in that year's census 
+
+dt <- data.table()
+dts00 <- data.table()
+for(iRow in 1:nrow(hurr)){
+  if((iRow %% 20)==0){
+    cat(iRow, 'of', nrow(hurr), '\n')
+  }
+  hurr_lat <- hurr[iRow]$Lat.N
+  hurr_long <- hurr[iRow]$Long.W
+  hurr_id <- hurr[iRow]$hurr_id
+  ddis00<- (distCosine(Cen00[,2:3], c(hurr_long, hurr_lat), r=6378137))/1000 #This finds the shortest distance between two points
+  #In meters
+  dt <- data.table(hurr_id = hurr_id, cen00_id = Cen00$ID, ddis00 )
+  dt <- dt[ddis00<500]
+  dts00 <- rbindlist(list(dts00, dt), use.names = TRUE, fill=TRUE)
+}
+#colnames(ddis)<-c("distance(km)", "dat","ID")
+
+ddis00<-data.table::data.table(ddis00)
+
+
