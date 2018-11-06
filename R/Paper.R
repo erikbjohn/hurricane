@@ -268,18 +268,34 @@ write.table(longlat00, file="LongLat00.csv",sep=",",row.names=F)
 
 hurr<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Hurricane data\\Extracted data.csv")
 
+
+for (row in 2:length(hurr$Year)){ # 2 so you don't affect column names
+  if(hurr$Year[row] == "NA") {    # if its empty...
+    hurr$Year[row] = hurr$Year[row-1] # ...replace with previous row's value
+  }
+}
+
+
+
+##############################~~~~~~~~~~Split year and hurricane number~~~~~~~~~~####################################
+
+
+ysplit<-matrix(unlist( strsplit( hurr$Year , "\\." ) ),ncol=2,byrow = TRUE)
+
+hurr$Year<- ysplit[,1]
+
+hurr$Hurricane <- ysplit[,2]
+
+#REMOVE YEAR2 AND COUNTRY and rename v13
+hurr$category<-hurr$V13
+
+hurr$Year2<-NULL
+
+hurr$Country<-NULL
+
+hurr$V13<-NULL
+
 head(hurr)
-
-
-
-###################~~~~~~~~~~~~~Creating a small dataset to test the distance thing~~~~~~~~~~~~~~~~~##################
-mloc60<-abs(Cen60[,2:3])
-hloc<-hurr[,(6:5)]
-
-
-testh<-head(hloc)
-
-testm<-head(mloc60)
 
 
 
@@ -336,25 +352,32 @@ Cen00[, ID := .GRP, by = .(Long, Lat)]
 
 ##############################~~~~~~~~~~~~~Calulate the distance to centroids~~~~~~~~~~~~~~~~~########################
 
+
+Cen60<-Cen60[dat != 0] #Remove locations where no population exist 
+
 #Distance from huricane 1 in 1960  after its first 6 hours to each centroid in that year's census 
-
-ddis<-as.data.frame((distCosine(Cen60[,2:3], c(44.3, 13.3), r=6378137))/1000) #This finds the shortest distance between two points
-                                                                               #In meters
-ddis<-cbind(ddis, Cen60$dat, Cen60$ID)
-
-colnames(ddis)<-c("distance(km)", "dat","ID")
+dt <- data.table()
+dts <- data.table()
+for(iRow in 1:nrow(hurr)){
+  if((iRow %% 20)==0){
+    cat(iRow, 'of', nrow(hurr), '\n')
+  }
+  hurr_lat <- hurr[iRow]$Lat.N
+  hurr_long <- hurr[iRow]$Long.W
+  hurr_id <- hurr[iRow]$hurr_id
+  ddis<- (distCosine(Cen60[,2:3], c(hurr_long, hurr_lat), r=6378137))/1000 #This finds the shortest distance between two points
+  #In meters
+  dt <- data.table(hurr_id = hurr_id, cen60_id = Cen60$ID, ddis )
+  dt <- dt[ddis<500]
+  dts <- rbindlist(list(dts, dt), use.names = TRUE, fill=TRUE)
+}
+#colnames(ddis)<-c("distance(km)", "dat","ID")
 
 ddis<-data.table::data.table(ddis)
 
-ddis <- ddis[dat != 0]    #Removing all the zeros which would indicate no populaition. 
 
 
-####################~~~~~~~~~~~~~~~~~~Attatching the location to the distance calculations~~~~~~~~~~~~~~~###################
-
-Cen60<-Cen60[dat != 0]
-
+####################~~~~~~~~~~~~~~~~~~Completing dataset~~~~~~~~~~~~~~~###################
 
 ddis<-cbind(ddis, Cen60$Long,Cen60$Lat)
-colnames(ddis)<-c("distance(m)", "dat", "ID", "Long","Lat")
-
-
+colnames(ddis)<-c("distance(km)", "dat", "ID", "Long","Lat")
