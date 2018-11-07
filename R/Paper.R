@@ -299,6 +299,22 @@ head(hurr)
 
 
 
+###########################~~~~~~~~~~~~~~~~~~~~~Linear interpolation of data~~~~~~~~~~~~~~~~~~~~~~##########################
+
+
+setwd("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material")
+source('R/get_hurr_in.R')
+hurr_in <- get_hurr_in()
+
+
+########################~~~~~~~~~~~~~~~~~~~~~~Attach Hurricane ID to hurricanes~~~~~~~~~~~~~~~~~~~~~###################
+
+hurr_in[, full_ID := .GRP, by = .(hurr_id, Hurricane)] # Looks like the regular hurricane ID to me
+
+
+
+
+
 ##########################~~~~~~~~~~~~~~~~~~~~~~~~~~Data tabel format~~~~~~~~~~~~~~~~~~~~~~~~~~~##########################
 
 Cen60 <-data.table::data.table(Cen60)
@@ -307,7 +323,7 @@ Cen80 <-data.table::data.table(Cen80)
 Cen90 <-data.table::data.table(Cen90)
 Cen00 <-data.table::data.table(Cen00)
 
-dt <- Cen60[dat != 0]
+
 #^^^^^^^^^^^^^^^^^^^^^^^^~~~~~~~~~~~~~~~~~~~~~~~~~~Data tabel format~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -496,3 +512,16 @@ for(iRow in 1:nrow(hurr)){
 ddis00<-data.table::data.table(ddis00)
 
 
+#####################~~~~~~~~~~~~~~~~~~~~~Get distance calculations in CSV format~~~~~~~~~~~~~~~~~~###################
+
+setwd("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material")
+
+write.table(dts, file="dts.csv",sep=",",row.names=F)
+write.table(dts70, file="dts70.csv",sep=",",row.names=F)
+write.table(dts80, file="dts80.csv",sep=",",row.names=F)
+write.table(dts90, file="dts90.csv",sep=",",row.names=F)
+write.table(dts00, file="dts00.csv",sep=",",row.names=F)
+
+###~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###
+
+dt_dists <- rbindlist(list(dts, dts70, dts80, dts90, dts00), use.names = TRUE, fill=TRUE)
