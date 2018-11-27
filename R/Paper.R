@@ -302,11 +302,16 @@ for (row in 2:nrow(hurr_in["Hurricane"])){ # 2 so you don't affect column names
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Latitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 for (row in 2:nrow(hurr_in["Lat.N"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Lat.N"])) {    # if its empty...
+
+  
+  
+   if(is.na(hurr_in[row,"Lat.N"])) {    # if its empty...
     hurr_in[row,"Lat.N"] <- as.numeric((as.numeric(hurr_in[row-1,"Lat.N"]) + as.numeric(hurr_in[row+1,"Lat.N"]))/2)
-  }
+    
+ 
 }
 
+}
 
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Longitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -517,12 +522,6 @@ coords2country = function(points)
   indices$ADMIN  
 }
 
-##
-
-## 
-
-# set up some points to test
-#points = data.frame(lon=c(0, 5, 10, 15, 20), lat=c(51.5, 50, 48.5, 47, 44.5))
 
 points=data.frame(-cropset_full$Long,cropset_full$Lat)
 
@@ -559,6 +558,70 @@ mexico<-cropset_full[which(cropset_full$`coords2country(points)`=='Mexico')]
 
 
 
+
+
+
+
+######################################Using world map to plot hurricanes in the Caribbean######################
+
+
+
+
+
+coords2country = function(points_hur)
+{
+  # prepare a SpatialPolygons object with one poly per country
+  countries = map('worldHires', fill=TRUE, col="transparent", plot=FALSE)
+  names = sapply(strsplit(countries$names, ":"), function(x) x[1])
+  
+  
+  #clean up polygons that are out of bounds
+  filter = countries$x < -180 & !is.na(countries$x)
+  countries$x[filter] = -180
+  
+  filter = countries$x > 180 & !is.na(countries$x)
+  countries$x[filter] = 180
+  
+  countriesSP <- getMap(resolution='high')
+  #countriesSP <- getMap(resolution='high') #you could use high res map from rworldxtra if you were concerned about detail
+  
+  # convert our list of points to a SpatialPoints object
+  
+  pointsSP = SpatialPoints(points_hur, proj4string=CRS(" +proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "))
+  
+  #setting CRS directly to that from rworldmap
+  pointsSP = SpatialPoints(points_hur, proj4string=CRS(proj4string(countriesSP)))  
+  
+  #gBuffer(pointsSP, width=1000)
+  # use 'over' to get indices of the Polygons object containing each point 
+  indices = over(pointsSP, countriesSP)
+  
+  # return the ADMIN names of each country
+  indices$ADMIN  
+}
+
+
+
+
+points_hur=data.frame(-hurr_in$Long.W[1999:2017],hurr_in$Lat.N[1999:2017])
+
+# plot them on a map
+map("worldHires", xlim=c(-119, -40), ylim=c(0, 30))
+points(points_hur$X.hurr_in.Long.W.1999.2017., points_hur$hurr_in.Lat.N.1999.2017., col="Red")
+points(-hurr_in$Long.W[2019:2051], hurr_in$Lat.N[2019:2051], col="blue")
+points(-hurr_in$Long.W[2053:2069], hurr_in$Lat.N[2053:2069], col="green")
+points(-hurr_in$Long.W[2073:2097], hurr_in$Lat.N[2073:2097], col="purple")
+points(-hurr_in$Long.W[2099:2135], hurr_in$Lat.N[2099:2135], col="black")
+
+
+
+
+#############################################
+#So this worked. What I need now is to find a
+#a way to map all the hurricanes by year
+#and then we can disaggrigate it by the countries
+#individually.
+############################################
 
 
 
@@ -611,7 +674,6 @@ mexico<-cropset_full[which(cropset_full$`coords2country(points)`=='Mexico')]
 ####################################Using shapefile from puerto rico#################################################
 
 
-
 prico <- system.file("external/tl_2016_72_cousub.shp", package="raster")
 prico
 
@@ -621,9 +683,11 @@ shape_prico
 n<-length(shape_prico)
 
 
-
 crs(shape_prico)
 
+
+
+plot(shape_prico)#, col=rainbow(n))
 
 #Get raster points and centrid locations
 
@@ -633,7 +697,21 @@ shape_prico<-raster(shape_prico)
 
 
 
-raspoint<-rasterToPoints(shape_prico)
+raspoint<-rasterToPoints(shape_prico, spatial = TRUE)
+
+
+buf_file<-spTransform(raspoint, CRS(proj_PR))
+plot(buf_file, col=rainbow(n))
+
+#Trying to understand what gBuffer is and what it does actually
+
+buff_pr<-gBuffer(buf_file, width=1000, byid = TRUE, quadsegs = 5, capStyle="ROUND",joinStyle="ROUND")
+
+plot(buff_pr)
+
+bufpoints<-as.data.frame(buf_file)
+
+
 raspoint<-as.data.frame(raspoint)
 
 colnames(raspoint)<-c("Long","Lat")
@@ -643,8 +721,54 @@ raspoint<-abs(data.table::data.table(raspoint))
 raspoint[, ID := .GRP, by = .(Long, Lat)]
 
 
+#Test to see if points are in Puerto Rico only and not in the water#
 
-plot(shape_prico)#, col=rainbow(n))#, add=TRUE)
+coords2country = function(points)
+{
+  # prepare a SpatialPolygons object with one poly per country
+  countries = map('worldHires', fill=TRUE, col="transparent", plot=FALSE)
+  names = sapply(strsplit(countries$names, ":"), function(x) x[1])
+  
+  
+  #clean up polygons that are out of bounds
+  filter = countries$x < -180 & !is.na(countries$x)
+  countries$x[filter] = -180
+  
+  filter = countries$x > 180 & !is.na(countries$x)
+  countries$x[filter] = 180
+  
+  countriesSP <- getMap(resolution='high')
+  #countriesSP <- getMap(resolution='high') #you could use high res map from rworldxtra if you were concerned about detail
+  
+  # convert our list of points to a SpatialPoints object
+  
+  pointsSP = SpatialPoints(points, proj4string=CRS(" +proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "))
+  
+  #setting CRS directly to that from rworldmap
+  pointsSP = SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
+  
+  #gBuffer(pointsSP, width=1000)
+  # use 'over' to get indices of the Polygons object containing each point 
+  indices = over(pointsSP, countriesSP)
+  
+  # return the ADMIN names of each country
+  indices$ADMIN  
+}
+
+
+points=data.frame(-raspoint$Long,raspoint$Lat)
+
+# plot them on a map
+map("worldHires", xlim=c(-68, -65), ylim=c(5, 30))
+points(points$X.raspoint.Long, points$raspoint.Lat, col="Red")
+
+# get a list of country names
+nam<-as.data.frame(coords2country(points), stringsAsFactors=FALSE)
+
+raspoint<-cbind(raspoint,nam)
+
+
+
 
 
 
@@ -794,6 +918,6 @@ plot(hurr_points, pch=20, cex=2, col='red')
 hurr_points<-raster(hurr_points)
 
 
-install.packages("devtools")
+
 
 
