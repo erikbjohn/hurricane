@@ -227,175 +227,218 @@ head(hurr)
 
 setwd("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Hurricane data")
 
-na.df <- data.frame(num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, let = NA, num = NA, let = NA, num = NA, let = NA)
-
-hurr_in<-do.call(rbind, apply(hurr, 1, function(x) {rbind(x, na.df)}))
-colnames(hurr_in)<-colnames(hurr)
+na.df <- data.frame(num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA)
 
 
-
-#Fill empty cells with linearly interolated values
-
-#hurr_in$Year<-sub("NULL", "NA", hurr_in$Year) #Replace empty cells with NA
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>YEAR<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-for (row in 2:nrow(hurr_in["Year"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Year"])) {    # if its empty...
-    hurr_in[row,"Year"] <- hurr_in[row-1,"Year"]
-  }
-}
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Month<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-for (row in 2:nrow(hurr_in["Mo.th"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Mo.th"])) {    # if its empty...
-    hurr_in[row,"Mo.th"] <- hurr_in[row-1,"Mo.th"]
-  }
-}
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>day<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Day"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Day"])) {    # if its empty...
-    hurr_in[row,"Day"] <- hurr_in[row-1,"Day"]
-  }
-}
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Category<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["category"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"category"])) {    # if its empty...
-    hurr_in[row,"category"] <- hurr_in[(row-1),"category"]
-  }
-}
+##################################Splitting by key###################
+hurr <- as.data.table(hurr)
+hurr<- hurr[, hurr_key:=paste0(Year, '_', Hurricane)]
+hurr_list<-list()
+hurr_list<-split(hurr, hurr$hurr_key)
+View(hurr_list)
+####################################################################
 
 
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>3h interval<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+hur1960<-as.data.frame(hurr_list$`1960_1`)
 
-for (row in 2:nrow(hurr_in["6h interval UTC"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"6h interval UTC"])) {    # if its empty...
-    hurr_in[row,"6h interval UTC"] <- 3 + as.numeric(hurr_in[row-1,"6h interval UTC"])
-  }
+for (i in 1:length(hurr_list)){
+#Create space for interpolation
+hurr_list[[i]]<-do.call(rbind, apply(hurr_list[[i]], 1, function(x) {rbind(x, na.df)}))
+
+#Rename variables
+colnames(hurr_list[[i]])<-colnames(hur1960)
+
+#Drop last row of each dataset
+hurr_list[[i]]<-hurr_list[[i]][-nrow(hurr_list[[i]]),] 
+
+
+
 }
 
 
 
 
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>hurricane<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+for(count in 1:length(hurr_list)){
 
-for (row in 2:nrow(hurr_in["Hurricane"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Hurricane"])) {    # if its empty...
-    hurr_in[row,"Hurricane"] <- hurr_in[row-1,"Hurricane"]
-  }
+if(length(hurr_list[[count]]$Year)>2) { 
+
+  #Interpolate for Year
+for(row in 2:length(hurr_list[[count]]$Year)){ # 2 so you don't affect column names
+if(is.na(hurr_list[[count]]$Year[row])) {    # if its empty...
+  hurr_list[[count]]$Year[row]<-hurr_list[[count]]$Year[row+1]
+
 }
 
-
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Latitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Lat.N"])){ # 2 so you don't affect column names
-
+  } 
   
   
-   if(is.na(hurr_in[row,"Lat.N"])) {    # if its empty...
-    hurr_in[row,"Lat.N"] <- as.numeric((as.numeric(hurr_in[row-1,"Lat.N"]) + as.numeric(hurr_in[row+1,"Lat.N"]))/2)
+  #Interpolate for month
+  for (row in 2:length(hurr_list[[count]]$Mo.th)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$Mo.th[row])) {    # if its empty...
+      hurr_list[[count]]$Mo.th[row] <- hurr_list[[count]]$Mo.th[row-1]
+    }
+  }
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>day<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$Day)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$Day[row])) {    # if its empty...
+      hurr_list[[count]]$Day[row] <-hurr_list[[count]]$Day[row-1]
+    }
+  }
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Category<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$category)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$category[row])) {    # if its empty...
+      hurr_list[[count]]$category[row] <- hurr_list[[count]]$category[row-1]
+    }
+  }
+  
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>3h interval<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$'6h interval UTC')){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$'6h interval UTC'[row])) {    # if its empty...
+      hurr_list[[count]]$'6h interval UTC'[row]<- 3 + as.numeric(hurr_list[[count]]$'6h interval UTC'[row-1])
+    }
+  }
+  
+  
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>hurricane<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$Hurricane)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$Hurricane[row])) {    # if its empty...
+      hurr_list[[count]]$Hurricane[row] <- hurr_list[[count]]$Hurricane[row-1]
+    }
+  }
+  
+  
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Latitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$Lat.N)){ # 2 so you don't affect column names
     
- 
-}
-
-}
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Longitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Long.W"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Long.W"])) {    # if its empty...
-    hurr_in[row,"Long.W"] <- as.numeric((as.numeric(hurr_in[row-1,"Long.W"]) + as.numeric(hurr_in[row+1,"Long.W"]))/2)
+      if(is.na(hurr_list[[count]]$Lat.N[row])) {    # if its empty...
+        hurr_list[[count]]$Lat.N[row] <- as.numeric((as.numeric(hurr_list[[count]]$Lat.N[row-1]) + as.numeric(hurr_list[[count]]$Lat.N[row+1]))/2)
+      
+      
+    }
+    
   }
-}
-
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Degrees<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Direction in degrees"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Direction in degrees"])) {    # if its empty...
-    hurr_in[row,"Direction in degrees"] <- (as.numeric(hurr_in[row-1,"Direction in degrees"]) + as.numeric(hurr_in[row+1,"Direction in degrees"]))/2
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Longitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$Long.W)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$Long.W[row])) {    # if its empty...
+      hurr_list[[count]]$Long.W[row]<- as.numeric((as.numeric(hurr_list[[count]]$Long.W[row-1]) + as.numeric(hurr_list[[count]]$Long.W[row+1]))/2)
+    }
   }
-}
-
-
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Speed in mph<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Speed in MPH"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Speed in MPH"])) {    # if its empty...
-    hurr_in[row,"Speed in MPH"] <- (as.numeric(hurr_in[row-1,"Speed in MPH"]) + as.numeric(hurr_in[row+1,"Speed in MPH"]))/2
+  
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Degrees<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$'Direction in degrees')){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$'Direction in degrees'[row])) {    # if its empty...
+      hurr_list[[count]]$'Direction in degrees'[row] <- (as.numeric(hurr_list[[count]]$'Direction in degrees'[row-1]) + as.numeric(hurr_list[[count]]$'Direction in degrees'[row+1]))/2
+    }
   }
-}
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Speed in kmph<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Speed in KPH"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Speed in KPH"])) {    # if its empty...
-    hurr_in[row,"Speed in KPH"] <- (as.numeric(hurr_in[row-1,"Speed in KPH"]) + as.numeric(hurr_in[row+1,"Speed in KPH"]))/2
+  
+  
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Speed in mph<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$'Speed in MPH')){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$'Speed in MPH'[row])) {    # if its empty...
+      hurr_list[[count]]$'Speed in MPH'[row] <- (as.numeric(hurr_list[[count]]$'Speed in MPH'[row-1]) + as.numeric(hurr_list[[count]]$'Speed in MPH'[row+1]))/2
+    }
   }
-}
-
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Wind in MPH<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Wind Speed in MPH"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Wind Speed in MPH"])) {    # if its empty...
-    hurr_in[row,"Wind Speed in MPH"] <- (as.numeric(hurr_in[row-1,"Wind Speed in MPH"]) + as.numeric(hurr_in[row+1,"Wind Speed in MPH"]))/2
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Speed in kmph<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$'Speed in KPH')){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$'Speed in KPH'[row])) {    # if its empty...
+      hurr_list[[count]]$'Speed in KPH'[row] <- (as.numeric(hurr_list[[count]]$'Speed in KPH'[row-1]) + as.numeric(hurr_list[[count]]$'Speed in KPH'[row+1]))/2
+    }
   }
-}
-
-#>>>>>>>>>>>>>>>>>>>>>>>>>>>>Wind in kmph<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-for (row in 2:nrow(hurr_in["Wind Speed in KPH"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"Wind Speed in KPH"])) {    # if its empty...
-    hurr_in[row,"Wind Speed in KPH"] <- (as.numeric(hurr_in[row-1,"Wind Speed in KPH"]) + as.numeric(hurr_in[row+1,"Wind Speed in KPH"]))/2
+  
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Wind in MPH<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$'Wind Speed in MPH')){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$'Wind Speed in MPH'[row])) {    # if its empty...
+      hurr_list[[count]]$'Wind Speed in MPH'[row] <- (as.numeric(hurr_list[[count]]$'Wind Speed in MPH'[row-1]) + as.numeric(hurr_list[[count]]$'Wind Speed in MPH'[row+1]))/2
+    }
   }
-}
-
-
-
-
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Wind in kmph<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$'Wind Speed in KPH')){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$'Wind Speed in KPH'[row])) {    # if its empty...
+      hurr_list[[count]]$'Wind Speed in KPH'[row] <- (as.numeric(hurr_list[[count]]$'Wind Speed in KPH'[row-1]) + as.numeric(hurr_list[[count]]$'Wind Speed in KPH'[row+1]))/2
+    }
+  }
+  
+  
+  
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix ID<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-for (row in 2:nrow(hurr_in["hurr_id"])){ # 2 so you don't affect column names
-  if(is.na(hurr_in[row,"hurr_id"])) {    # if its empty...
-    hurr_in[row,"hurr_id"] <- (1 + as.numeric(hurr_in[row-1,"hurr_id"]))
+  
+  
+ 
+for (row in 2:length(hurr_list[[count]]$hurr_id)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$hurr_id[row])) {    # if its empty...
+      hurr_list[[count]]$hurr_id[row] <- 1+ as.numeric(hurr_list[[count]]$hurr_id[row-1] )
+    }
+  
+  else{
+    
+    
+    hurr_list[[count]]$hurr_id[row] <- 1+ as.numeric(hurr_list[[count]]$hurr_id[row-1] )}
   }
+  
+  #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>hurricane key<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  
+  for (row in 2:length(hurr_list[[count]]$hurr_key)){ # 2 so you don't affect column names
+    if(is.na(hurr_list[[count]]$hurr_key[row])) {    # if its empty...
+      hurr_list[[count]]$hurr_key[row] <- hurr_list[[count]]$hurr_key[row-1]
+    }
+  }  
+  
+  
+  
+  
+}
 }
 
+#############################Rbind all the elements of our list to create one solid dataset#######################
+hurr_interpolated<-rbindlist(hurr_list, use.names=TRUE)
+ 
+    
+  
+    
 
 
 ##############~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Create csv file for hurr_in~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##################
 
 
-write.table(hurr_in, file="hurr_in.csv",sep=",",row.names=F)
+write.table(hurr_interpolated, file="hurr_interpolated.csv",sep=",",row.names=F)
 
-hurr_in <-fread("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Hurricane data\\hurr_in.csv")
-hurr_in  <- hurr_in [, Lat.N := as.numeric(stringr::str_replace(Lat.N, '\\.$', ''))]
-hurr_in  <- hurr_in [, Long.W := as.numeric(stringr::str_replace(Long.W, '\\.$', ''))]
-hurr_in$hurr_id <- 1:nrow(hurr_in )
+# hurr_in <-fread("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Hurricane data\\hurr_interpolated.csv")
+# hurr_in  <- hurr_in [, Lat.N := as.numeric(stringr::str_replace(Lat.N, '\\.$', ''))]
+# hurr_in  <- hurr_in [, Long.W := as.numeric(stringr::str_replace(Long.W, '\\.$', ''))]
+# hurr_in$hurr_id <- 1:nrow(hurr_in )
+# 
+# ############~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###############
 
-############~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~###############
-
-
-#Drop last row of data. This was restricting the distance calculations
-
-hurr_in <- hurr_in[-nrow(hurr_in),] 
 
 
 ##############Distance with cropped file############################
@@ -609,7 +652,7 @@ points_hur=data.frame(-hurr_in$Long.W[1999:2017],hurr_in$Lat.N[1999:2017])
 map("worldHires", xlim=c(-119, -40), ylim=c(0, 30))
 points(points_hur$X.hurr_in.Long.W.1999.2017., points_hur$hurr_in.Lat.N.1999.2017., col="Red")
 points(-hurr_in$Long.W[2019:2051], hurr_in$Lat.N[2019:2051], col="blue")
-points(-hurr_in$Long.W[2053:2069], hurr_in$Lat.N[2053:2069], col="green")
+points(-hurr_in$Long.W[2053:2069], hurr_in$Lat.N[2053:2069], col="green") #Katrina
 points(-hurr_in$Long.W[2073:2097], hurr_in$Lat.N[2073:2097], col="purple")
 points(-hurr_in$Long.W[2099:2135], hurr_in$Lat.N[2099:2135], col="black")
 
@@ -918,6 +961,9 @@ plot(hurr_points, pch=20, cex=2, col='red')
 hurr_points<-raster(hurr_points)
 
 
+# Interpolation
 
-
+hurr_in <- as.data.table(hurr_in)
+hurr_in <- hurr_in[, hurr_key:=paste0(Year, '_', Hurricane)]
+hurr_in <- hurr_in[, Lat_lag := shift(Lat.N,1,fill=NA,type = 'lag'),by=hurr_key][is.na(Lat_lag),Lat_lag:=Lat.N]
 
