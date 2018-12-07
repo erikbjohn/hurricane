@@ -23,6 +23,11 @@ install.packages("maptools", dependencies = TRUE)
 install.packages("rworldmap", dependencies = TRUE)
 install.packages("mapdata",dependencies = TRUE)
 install.packages("geonames", dependencies = TRUE)
+install.packages("lubridate", dependencies=TRUE)
+install.packages("readr", dependencies=TRUE)
+install.packages("‘HURDAT", dependencies = TRUE)
+#install.packages("C:/Users/goulb/Downloads/HURDAT_0.2.0.tar.gz", repos = NULL, type = "source")
+install.packages("stringr", dependencies = TRUE)
 
 library(spData)
 library(spdep)
@@ -46,6 +51,10 @@ library(maptools)
 library(rworldmap)
 library(geonames)
 library(mapdata)
+library(lubridate)
+library(readr)
+library(HURDAT)
+library(stringr)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LETS TRY ON OUR OWN NOW~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -151,7 +160,9 @@ print(llpts60_crop)
 Cen60_crop<- abs(as.data.frame(llpts60_crop))        #Took absolute value so as to not have to work with the minus sign on longitudes. The minus sign is to indicate that we are in the western hemesphere
 colnames(Cen60_crop)<-c("dat","Long","Lat")
 
-#buff60<-gBuffer(llpts60_crop, width = 10)
+
+
+buff60<-buffer(llpts60_crop, width=0, dissolve=FALSE)#st_buffer(llpts60_crop, 10)
 #gBuffer(llpts60_crop, byid=FALSE, id=NULL, width=1.0, quadsegs=5, capStyle="ROUND", joinStyle="ROUND", mitreLimit=1.0)
 
 
@@ -558,7 +569,7 @@ coords2country = function(points)
   
   # convert our list of points to a SpatialPoints object
   
-  pointsSP = SpatialPoints(points, proj4string=CRS(" +proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "))
+  pointsSP = SpatialPoints(points, proj4string=CRS("+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "))
   
   #setting CRS directly to that from rworldmap
   pointsSP = SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
@@ -589,6 +600,16 @@ nam$`coords2country(points)`<- gsub('US Naval Base Guantanamo Bay', 'Cuba', nam$
 
 cropset_full<-cbind(cropset_full,nam)
 
+
+options(geonamesUsername="rushaine")
+source(system.file("tests","testing.R",package="geonames"),echo=TRUE)
+GNcountryCode(51.5,0)$'countryName'
+
+#names<-list()
+
+names2 <-GNcountryCode(-cropset_full$Long[1],cropset_full$Lat[1])
+
+GNcountryCode(10.2,47.03, maxRows=10)
 
 
 #########################Check those locations that produce NA entries############################
@@ -859,6 +880,12 @@ lines(-hurr_interpolated$Long.W[1992:2028], hurr_interpolated$Lat.N[1992:2028], 
 ####################################################################################################################
 
 
+proj4string(df) <- CRS("+init=epsg:4326") 
+df_sf <- st_as_sf(df) %>% st_transform(3488) #transform to NAD83(NSRS2007) / California Albers
+df_sf_buff <- st_buffer(df_sf, 500)
+plot(df_sf_buff)
+
+
 
 ####################################Using shapefile from puerto rico#################################################
 
@@ -1112,4 +1139,280 @@ hurr_points<-raster(hurr_points)
 hurr_in <- as.data.table(hurr_in)
 hurr_in <- hurr_in[, hurr_key:=paste0(Year, '_', Hurricane)]
 hurr_in <- hurr_in[, Lat_lag := shift(Lat.N,1,fill=NA,type = 'lag'),by=hurr_key][is.na(Lat_lag),Lat_lag:=Lat.N]
+
+
+
+
+###############################################HURDAT DATASET#######################################################
+
+#Call HURRDAT2 data from package. This dataset replaces the old dataset from which the previous literature 
+#conducted research. This dataset is updated to include tropical cyclones between 1851 and 2017.
+
+al<- get_hurdat(basin = "AL")
+
+#Collect tropical cyclones that were classifies under the SS scale as hurricanes(1-3); 
+#111-129 mph,96-112 kt,178-208 km/h.
+
+ATLANTIC<-al[which(al$Status=="HU"),]
+
+#Collecting hurricanes between categiries 3 and 5
+
+atlantic_cat345<-ATLANTIC[which(ATLANTIC$Wind>96),]
+
+#Convert wind speed to km/h. Currently recorded in knots
+
+atlantic_cat345$Wind<-(atlantic_cat345$Wind*1.852)
+
+#Delete additional data that will not be used due to limited number of observations
+
+atlantic_cat345[,10:21]<-NULL
+atlantic_cat345<-as.data.table(atlantic_cat345)
+
+#SPlit character variables: Year, Month, Day, Time
+
+
+alsplit<-str_split_fixed(atlantic_cat345$DateTime, " ",2)
+
+datefix<-alsplit[,1]
+timefix<-alsplit[,2]
+dsplit<- str_split_fixed(datefix, "-",3)
+
+
+#Need to separate the time variable into a more maliable formal
+timefix<-as.matrix(timefix)
+
+colnames(timefix)<-c("time")
+
+tsplit<-str_split_fixed(timefix,":",3)
+
+
+
+atlantic_cat345$month<-dsplit[,2]
+atlantic_cat345$day<-dsplit[,3]
+atlantic_cat345$time<-alsplit[,2]
+atlantic_cat345$year<-dsplit[,1]
+atlantic_cat345$atlantic_cat345_id <- 1:nrow(atlantic_cat345)
+atlantic_cat345$time<-tsplit[,1]
+
+#Remove the DateTIME Variable that we just broke up
+atlantic_cat345$DateTime<-NULL
+
+
+
+#############################Interpolate the data###############################################
+na.df <- data.frame(num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA, let = NA, let = NA, num = NA, let = NA, num = NA, let = NA, num = NA)
+
+
+##################################Splitting by key###################
+atlantic_cat345 <- as.data.table(atlantic_cat345)
+atlantic_cat345_list<-list()
+atlantic_cat345_list<-split(atlantic_cat345, atlantic_cat345$Key)
+View(atlantic_cat345_list)
+
+
+################################Creating spaces for the interpolation in the data
+hur1852<-as.data.frame(atlantic_cat345_list$AL011852)
+
+for (i in 1:length(atlantic_cat345_list)){
+  #Create space for interpolation
+  atlantic_cat345_list[[i]]<-do.call(rbind, apply(atlantic_cat345_list[[i]], 1, function(x) {rbind(x, na.df)}))
+  
+  #Rename variables
+  colnames(atlantic_cat345_list[[i]])<-colnames(hur1852)
+  
+  #Drop last row of each dataset
+  atlantic_cat345_list[[i]]<-atlantic_cat345_list[[i]][-nrow(atlantic_cat345_list[[i]]),] 
+  
+  
+  #List replicating the first 3 columns so this will delet them 
+  atlantic_cat345_list[[i]][,14:16]<-NULL
+  
+}
+
+
+
+
+
+#################################Fill the spaces created with interpoated data
+
+
+for(count in 1:length(atlantic_cat345_list)){
+  
+  if(length(atlantic_cat345_list[[count]]$year)>2) { 
+    
+    #Interpolate for Year
+    for(row in 2:length(atlantic_cat345_list[[count]]$year)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$year[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$year[row]<-atlantic_cat345_list[[count]]$year[row+1]
+        
+      }
+      
+    } 
+    
+    
+    #Interpolate for month
+    for (row in 2:length(atlantic_cat345_list[[count]]$month)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$month[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$month[row] <- atlantic_cat345_list[[count]]$month[row-1]
+      }
+    }
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>day<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$day)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$day[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$day[row] <-atlantic_cat345_list[[count]]$day[row-1]
+      }
+    }
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Category<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    # 
+    # for (row in 2:length(atlantic_cat345_list[[count]]$category)){ # 2 so you don't affect column names
+    #   if(is.na(atlantic_cat345_list[[count]]$category[row])) {    # if its empty...
+    #     atlantic_cat345_list[[count]]$category[row] <- atlantic_cat345_list[[count]]$category[row-1]
+    #   }
+    # }
+    # 
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>3h interval<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    # for (row in 2:length(atlantic_cat345_list[[count]]$'6h interval UTC')){ # 2 so you don't affect column names
+    #   if(is.na(atlantic_cat345_list[[count]]$'6h interval UTC'[row])) {    # if its empty...
+    #     atlantic_cat345_list[[count]]$'6h interval UTC'[row]<- 3 + as.numeric(atlantic_cat345_list[[count]]$'6h interval UTC'[row-1])
+    #   }
+    # }
+    
+    
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>name<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Name)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Name[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Name[row] <- atlantic_cat345_list[[count]]$Name[row-1]
+      }
+    }
+    
+    
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Latitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Lat)){ # 2 so you don't affect column names
+      
+      if(is.na(atlantic_cat345_list[[count]]$Lat[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Lat[row] <- as.numeric((as.numeric(atlantic_cat345_list[[count]]$Lat[row-1]) + as.numeric(atlantic_cat345_list[[count]]$Lat[row+1]))/2)
+        
+        
+      }
+      
+    }
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Longitudes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Lon)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Lon[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Lon[row]<- as.numeric((as.numeric(atlantic_cat345_list[[count]]$Lon[row-1]) + as.numeric(atlantic_cat345_list[[count]]$Lon[row+1]))/2)
+      }
+    }
+    
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>time<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$time)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$time[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$time[row] <- (as.numeric(atlantic_cat345_list[[count]]$time[row-1]) + as.numeric(atlantic_cat345_list[[count]]$time[row+1]))/2
+      }
+    }
+    
+    
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>wind<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Wind)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Wind[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Wind[row] <- (as.numeric(atlantic_cat345_list[[count]]$Wind[row-1]) + as.numeric(atlantic_cat345_list[[count]]$Wind[row+1]))/2
+      }
+    }
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Pressure<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Pressure)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Pressure[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Pressure[row] <- (as.numeric(atlantic_cat345_list[[count]]$Pressure[row-1]) + as.numeric(atlantic_cat345_list[[count]]$Pressure[row+1]))/2
+      }
+    }
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Status<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Status)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Status[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Status[row] <- atlantic_cat345_list[[count]]$Status[row-1]
+      }
+    }
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>Record<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Record)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Record[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Record[row] <- atlantic_cat345_list[[count]]$Record[row-1]
+      }
+    }
+    
+    
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix ID<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$atlantic_cat345_id)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$atlantic_cat345_id[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$atlantic_cat345_id[row] <- 1+ as.numeric(atlantic_cat345_list[[count]]$atlantic_cat345_id[row-1] )
+      }
+      
+      else{
+        
+        
+        atlantic_cat345_list[[count]]$atlantic_cat345_id[row] <- 1+ as.numeric(atlantic_cat345_list[[count]]$atlantic_cat345_id[row-1] )}
+    }
+    
+    #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>atlantic_cat345icane key<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    
+    for (row in 2:length(atlantic_cat345_list[[count]]$Key)){ # 2 so you don't affect column names
+      if(is.na(atlantic_cat345_list[[count]]$Key[row])) {    # if its empty...
+        atlantic_cat345_list[[count]]$Key[row] <- atlantic_cat345_list[[count]]$Key[row-1]
+      }
+    }  
+    
+    
+    
+    
+  }
+}
+
+#############################Rbind all the elements of our list to create one solid dataset#######################
+atlantic_cat345_interpolated<-rbindlist(atlantic_cat345_list, use.names=TRUE)
+
+
+#Fix interpolation to be in order because it was messing up
+atlantic_cat345_interpolated<- atlantic_cat345_interpolated[order(year),] 
+
+
+##############~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Create csv file for atlantic_cat345_in~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##################
+
+
+write.table(atlantic_cat345_interpolated, file="atlantic_cat345_interpolated.csv",sep=",",row.names=F)
+
+atlantic_cat345_interpolated <-fread("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Hurricane data\\atlantic_cat345_interpolated.csv")
+atlantic_cat345_interpolated <- atlantic_cat345_interpolated[, Lat := as.numeric(stringr::str_replace(Lat, '\\.$', ''))]
+atlantic_cat345_interpolated <- atlantic_cat345_interpolated[, Lon := as.numeric(stringr::str_replace(Lon, '\\.$', ''))]
+atlantic_cat345_interpolated$atlantic_cat345_id<-1:nrow(atlantic_cat345_interpolated )
+
+
 
