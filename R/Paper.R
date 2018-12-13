@@ -162,7 +162,7 @@ colnames(Cen60_crop)<-c("dat","Long","Lat")
 
 
 
-buff60<-buffer(llpts60_crop, width=0, dissolve=FALSE)#st_buffer(llpts60_crop, 10)
+#buff60<-buffer(llpts60_crop, width=0, dissolve=FALSE)#st_buffer(llpts60_crop, 10)
 #gBuffer(llpts60_crop, byid=FALSE, id=NULL, width=1.0, quadsegs=5, capStyle="ROUND", joinStyle="ROUND", mitreLimit=1.0)
 
 
@@ -180,6 +180,145 @@ Cen60_crop <-data.table::data.table(Cen60_crop)
 Cen60_crop[, ID := .GRP, by = .(Long, Lat)]
 
 Cen60_crop<-Cen60_crop[dat != 0] #Remove locations where no population exist 
+
+
+
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>Using 1990 because the documentation says that 1990 onwards<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>Had more precise measurements so it is anticipated that the <<<<<<<<<<<<<<<<<<<<<<<<<<<
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>Results will be better in trying to name the locations<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Data for 1990~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+setwd("\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Census Data\\lacd1990")
+
+
+c90<-"lacd1990.tif"
+Raster90<- raster(c90)
+Raster90
+#Plots the entire region 
+plot(Raster90, breaks = c(1, 100, 150, 200), pch=20, cex=2, col='black')
+
+
+
+#Projection file
+crs(Raster90) <- "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs " 
+#"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0" 
+
+
+
+#extract points from raster file
+
+longlat90 <- rasterToPoints(Raster90)
+
+
+colnames(longlat90)<-c("dat","Long","Lat")
+
+#Get points at ceter of data
+
+spts90 <- rasterToPoints(Raster90, spatial = TRUE)
+
+llprj90 <- "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "# "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs" #"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"  # 
+# #
+
+llpts90 <- spTransform(spts90, CRS(llprj90))
+
+
+print(llpts90)
+
+Cen90<- abs(as.data.frame(llpts90))        #Took absolute value so as to not have to work with the minus sign on longitudes. The minus sign is to indicate that we are in the western hemesphere
+colnames(Cen90)<-c("dat","Long","Lat")
+
+
+##########################~~~~~~~~~~~~~~~~~~~~~~~~~~Data tabel format~~~~~~~~~~~~~~~~~~~~~~~~~~~##########################
+
+Cen90 <-data.table::data.table(Cen90)
+
+#Create location ID for each long/lat combination
+
+Cen90[, ID := .GRP, by = .(Long, Lat)]
+######################################################################################################################
+
+#CenEJ<-readRDS("lacd1990_centroids.rds")
+
+
+
+#cOLLECT THE DATA IN EXCEL FORMAT
+
+#write.table(CenEJ, file="cen_EJ.csv",sep=",",row.names=F)
+
+write.table(Cen90, file="Cen_RDG.csv",sep=",",row.names=F)
+
+write.table(longlat90, file="LongLat.csv",sep=",",row.names=F)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Cropped 1990 data~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#Lets crop the map to only include the Caribbean and central america
+
+Raster90_crop<-crop(Raster90, extent(-119, -5, 0, 35))
+plot(Raster90_crop, breaks = c(1.5, 100, 150, 200), pch=20, cex=2, col='black')
+
+
+
+#Projection file
+crs(Raster90_crop) <- "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs " 
+#"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0" 
+
+
+
+
+#extract points from raster file
+
+longlat90_crop <- rasterToPoints(Raster90_crop)
+
+
+colnames(longlat90_crop)<-c("Long","Lat","dat")
+
+#Get points at ceter of data
+
+spts90_crop <- rasterToPoints(Raster90_crop, spatial = TRUE)
+
+llprj90_crop <- "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "# "+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs" #"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"  # 
+# #
+
+llpts90_crop <- spTransform(spts90_crop, CRS(llprj90_crop))
+
+
+print(llpts90_crop)
+
+Cen90_crop<- abs(as.data.frame(llpts90_crop))        #Took absolute value so as to not have to work with the minus sign on longitudes. The minus sign is to indicate that we are in the western hemesphere
+colnames(Cen90_crop)<-c("dat","Long","Lat")
+
+
+
+#buff90<-buffer(llpts90_crop, width=0, dissolve=FALSE)#st_buffer(llpts90_crop, 10)
+#gBuffer(llpts90_crop, byid=FALSE, id=NULL, width=1.0, quadsegs=5, capStyle="ROUND", joinStyle="ROUND", mitreLimit=1.0)
+
+
+#cOLLECT THE DATA IN EXCEL FORMAT
+
+#write.table(CenEJ, file="cen_EJ.csv",sep=",",row.names=F)
+
+write.table(Cen90_crop, file="Cen_RDG.csv",sep=",",row.names=F)
+
+write.table(longlat90_crop, file="LongLat.csv",sep=",",row.names=F)
+
+
+
+Cen90_crop <-data.table::data.table(Cen90_crop)
+Cen90_crop[, ID := .GRP, by = .(Long, Lat)]
+
+Cen90_crop<-Cen90_crop[dat != 0] #Remove locations where no population exist
+
+
+
+
+
+
+
+
+
 ##########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Call in hurricane data~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#################
 
 setwd("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material")
@@ -590,6 +729,8 @@ map("worldHires", xlim=c(-119, -40), ylim=c(0, 30))
 points(points$X.cropset_full.Long, points$cropset_full.Lat, col="Red")
 
 # get a list of country names
+vec_names <- coords2country(points)
+nam <- data.table:data.table(vec_names)
 nam<-as.data.frame(coords2country(points), stringsAsFactors=FALSE)
 
 #Change Frnace to Guadalupe
@@ -1157,7 +1298,7 @@ ATLANTIC<-al[which(al$Status=="HU"),]
 
 #Collecting hurricanes between categiries 3 and 5
 
-atlantic_cat345<-ATLANTIC[which(ATLANTIC$Wind>96),]
+atlantic_cat345<-ATLANTIC[which(ATLANTIC$Wind >=96),]
 
 #Convert wind speed to km/h. Currently recorded in knots
 
@@ -1184,6 +1325,7 @@ timefix<-as.matrix(timefix)
 colnames(timefix)<-c("time")
 
 tsplit<-str_split_fixed(timefix,":",3)
+
 
 
 
@@ -1414,5 +1556,435 @@ atlantic_cat345_interpolated <- atlantic_cat345_interpolated[, Lat := as.numeric
 atlantic_cat345_interpolated <- atlantic_cat345_interpolated[, Lon := as.numeric(stringr::str_replace(Lon, '\\.$', ''))]
 atlantic_cat345_interpolated$atlantic_cat345_id<-1:nrow(atlantic_cat345_interpolated )
 
+
+##############Distance with cropped file for atlantic dataset############################
+
+
+#Distance from huricanes in 1990 for  each centroid in that year's census 
+
+at <- data.table()
+adts_crop90 <- data.table()
+for(iRow in 1:nrow(atlantic_cat345_interpolated)){
+  if((iRow %% 20)==0){
+    cat(iRow, 'of', nrow(atlantic_cat345_interpolated), '\n')
+  }
+  at_lat<-as.numeric(atlantic_cat345_interpolated[iRow]$Lat)
+  at_long<-as.numeric(atlantic_cat345_interpolated[iRow]$Lon)
+  at_id<-as.numeric(atlantic_cat345_interpolated[iRow]$atlantic_cat345_id)
+  atddis_crop<-(distCosine(Cen90_crop[,2:3], c(-at_long,at_lat), r=6378137))/1000 #This finds the shortest distance between two points
+  #In meters. Dividing by 1000 gives us our estimates in kilometers
+  at<-data.table(at_id = at_id, cen90_id = Cen90_crop$ID, atddis_crop )
+  at<-at[atddis_crop<=500]
+  adts_crop90 <- rbindlist(list(adts_crop90, at), use.names = TRUE, fill=TRUE)
+}
+#colnames(ddis)<-c("distance(km)", "dat","ID")
+
+atddis_crop<-data.table::data.table(atddis_crop)
+
+
+#Rename Column ID for hurricanes so that I can merge them.
+colnames(atlantic_cat345_interpolated)[13]<-"at_id"
+
+
+
+
+cropset_at<-merge(adts_crop90, atlantic_cat345_interpolated, by = "at_id", all=T)
+
+#Dropping pressure and records because tey will allow our data to disappear
+cropset_at$Record<-NULL
+cropset_at$Status<-NULL
+cropset_at$Pressure<-NULL
+
+
+
+
+#cropset_at<-cropset_at[-c(is.na(cropset_at$cen90_id)),]
+
+complete.cases(cropset_at)
+cropset_at_full<-na.omit(cropset_at)
+#cropset_at_full<-as.data.table(cropset_at_full)
+
+
+
+
+#merge by centroid ID to plot better. ID here is the centroid ID for the greographical data
+colnames(cropset_at_full)[2]<- "ID"
+
+#Need to rename the hurricane ID so that I can identify it better. The name currently is 
+#at_id. I will now call it hurricane_id
+
+colnames(cropset_at_full)[1]<- "hurricane_id"
+
+
+cropset_at_full<-merge(cropset_at_full, Cen90_crop, by = "ID", all=T)
+
+
+complete.cases(cropset_at_full)
+cropset_at_full<-na.omit(cropset_at_full) #delete NA entries
+
+
+########################################################
+#Have to reduce the dateset to include only hurricanes 
+#that occurred between 1990 and 2017. The previous datset 
+#included hurricanes as far back as 1851 which resulted
+#in the vector of names being too larget to place in one
+#set on the computer. The resuction thus allowed the codes
+#to run.
+##########################################################
+
+
+
+colnames(cropset_at_full)[3]<-"distance"
+colnames(cropset_at_full)[6]<-"hlat"
+colnames(cropset_at_full)[7]<-"hlon"
+
+
+#Ordered by centroid characteristics: dat
+
+
+
+
+#Reduce dataset size since the current size will not allow the space to be allocated for the information provided.
+cropset_at_full<-cropset_at_full[which(cropset_at_full$year>"1969"),]
+
+
+#We want to create the file on the computer so that we do not have to keep running this code.
+write.table(cropset_at_full, file="cropset_at_full.csv",sep=",",row.names=F)
+
+
+
+
+
+coords2country = function(points)
+{
+  # prepare a SpatialPolygons object with one poly per country
+  countries = map('worldHires', fill=TRUE, col="transparent", plot=FALSE)
+  names = sapply(strsplit(countries$names, ":"), function(x) x[1])
+  
+  
+  #clean up polygons that are out of bounds
+  filter = countries$x < -180 & !is.na(countries$x)
+  countries$x[filter] = -180
+  
+  filter = countries$x > 180 & !is.na(countries$x)
+  countries$x[filter] = 180
+  
+  countriesSP <- getMap(resolution='high')
+  #countriesSP <- getMap(resolution='high') #you could use high res map from rworldxtra if you were concerned about detail
+  
+  # convert our list of points to a SpatialPoints object
+  
+  pointsSP = SpatialPoints(points, proj4string=CRS("+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "))
+  
+  #setting CRS directly to that from rworldmap
+  pointsSP = SpatialPoints(points, proj4string=CRS(proj4string(countriesSP)))  
+  
+  #gBuffer(pointsSP, width=1000)
+  # use 'over' to get indices of the Polygons object containing each point 
+  indices = over(pointsSP, countriesSP)
+  
+  # return the ADMIN names of each country
+  indices$ADMIN  
+}
+
+
+points=data.frame(-cropset_at_full$Long,cropset_at_full$Lat.y)
+
+
+
+
+# plot them on a map
+map("worldHires", xlim=c(-119, -40), ylim=c(0, 30))
+points(points$X.cropset_at_full.Long, points$cropset_at_full.Lat, col="Red")
+
+
+#Data too big so i need to use bigmomory
+
+devtools::install_github("kaneplusplus/bigmemory")  #Download from master package in github
+
+library(bigmemory.sri)
+
+install.packages("bigmemory", dependencies = TRUE)
+library(bigmemory)
+
+#Get a list of country names
+
+names<-coords2country(points)
+
+nam<-as.data.table(names)
+
+
+#Change Frnace to Guadalupe and Martinique
+#nam$`coords2country(points)`<- gsub('France', 'Guadalupe', nam$names)
+#Change Naval base to Cuba
+#nam$`coords2country(points)`<- gsub('US Naval Base Guantanamo Bay', 'Cuba', nam$names)
+
+
+cropset_at_full<-cbind(cropset_at_full,nam$names)
+colnames(cropset_at_full)[15]<-"Country Name"
+
+
+#We want to create the file on the computer so that we do not have to keep running this code.
+write.table(cropset_at_full, file="cropset_at_full.csv",sep=",",row.names=F)
+
+
+
+
+# options(geonamesUsername="rushaine")
+# source(system.file("tests","testing.R",package="geonames"),echo=TRUE)
+# GNcountryCode(51.5,0)$'countryName'
+# 
+# #names<-list()
+# 
+# names2 <-GNcountryCode(-cropset_full$Long[1],cropset_full$Lat[1])
+# 
+# GNcountryCode(10.2,47.03, maxRows=10)
+# 
+
+#########################Check those locations that produce NA entries############################
+
+
+plot(getMap()) 
+points(-66.47917,18.47917,col='green') #This are is being recorded as NA but is highly populated and is in 
+#Puerto Rico. Same situation with a number of other countries. 
+
+
+###################################################
+#A number of locations that are populated on 
+#the peripheries of countries are being recorded 
+#as NA so I need to find a way to account for these
+#lcations so that our estimates can be as precise
+#as possible.
+###################################################
+
+######################################################
+#Lets locate the areas that are labeled as NA by using
+#shape files and the extents. 
+######################################################
+
+prico<-readOGR(dsn = "C:\\Users\\goulb\\Downloads\\tl_2016_72_cousub", layer = "tl_2016_72_cousub")
+
+#Use @bbox to identify the extents of the island.
+#Now to test it.
+
+
+prico@bbox
+
+prico_cropset<-cropset_at_full[which(cropset_at_full$Long>=65.1685 & cropset_at_full$Long<=67.99875 & cropset_at_full$Lat.y>=17.83151 & cropset_at_full$Lat.y <=18.5680)]
+
+
+
+prico.expand<-spTransform(prico, CRS("+proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs"))
+
+pbuf<-gBuffer(prico.expand,width = 100)
+
+coastal_border<-spTransform(pbuf, CRS("+proj=longlat +ellpswgs84"))
+plot(coastal_border,border="red")
+plot(prico, add= TRUE)
+
+
+
+
+
+
+########################################Collect data by country######################################################
+mexico<-data.table()
+mexico<-cropset_at_full[which(cropset_at_full$`Country Name`=='Mexico')]
+mexico_list<-split(mexico, mexico$Key)
+
+puerto<-data.table()
+puerto<-cropset_at_full[which(cropset_at_full$'Country Name'=='Puerto Rico')]
+puerto_list<-split(puerto, puerto$Key)
+
+bahamas<-data.table()
+bahamas<-cropset_at_full[which(cropset_at_full$'Country Name'=='The Bahamas')]
+bahamas_list<-split(bahamas, bahamas$Key)
+
+haiti<-data.table()
+haiti<-cropset_at_full[which(cropset_at_full$'Country Name'=='Haiti')]
+haiti_list<-split(haiti,haiti$Key)
+
+cayman<-data.table()
+cayman<-cropset_at_full[which(cropset_at_full$'Country Name' =='Cayman Islands')]
+cayman_list<-split(cayman, cayman$Key)
+
+anguilla<-data.table()
+anguilla<-cropset_at_full[which(cropset_at_full$'Country Name'=='Anguilla')]
+anguilla_list<-split(anguilla, anguilla$Key)
+
+guatemala<-data.table()
+guatemala<-cropset_at_full[which(cropset_at_full$'Country Name'=='Guatemala')]
+guatemala_list<-split(guatemala, guatemala$Key)
+
+montserrat<-data.table()
+montserrat<-cropset_at_full[which(cropset_at_full$'Country Name'=='Montserrat')]
+montserrat_list<-split(montserrat, montserrat$Key)
+
+dominica<-data.table()
+dominica<-cropset_at_full[which(cropset_at_full$'Country Name'=='Dominica')]
+dominica_list<-split(dominica, dominica$Key)
+
+
+stlucia<-data.table()
+stlucia<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Lucia')]
+stlucia_list<-split(stlucia, stlucia$Key)
+
+aruba<-data.table()
+aruba<-cropset_at_full[which(cropset_at_full$'Country Name'=='Aruba')]
+aruba_list<-split(aruba, aruba$Key)
+
+tt<-data.table()
+tt<-cropset_at_full[which(cropset_at_full$'Country Name'=='Trinidad and Tobago')]
+tt_list<-split(tt, tt$Key)
+
+guyana<-data.table()
+guyana<-cropset_at_full[which(cropset_at_full$'Country Name'=='Guyana')]
+guyana_list<-split(guyana, guyana$Key)
+
+cuba<-data.table()
+cuba<-cropset_at_full[which(cropset_at_full$'Country Name'=='Cuba')]
+cuba_list<-split(cuba, cuba$Key)
+
+bvi<-data.table()
+bvi<-cropset_at_full[which(cropset_at_full$'Country Name'=='British Virgin Islands')]
+bvi_list<-split(bvi, bvi$Key)
+
+belize<-data.table()
+belize<-cropset_at_full[which(cropset_at_full$'Country Name'=='Belize')]
+belize_list<-split(belize, belize$Key)
+
+stmartin<-data.table()
+stmartin<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Martin')]
+stmartin_list<-split(stmartin, stmartin$Key)
+
+AB<-data.table()
+AB<-cropset_at_full[which(cropset_at_full$'Country Name'=='Antigua and Barbuda')]
+AB_list<-split(AB, AB$Key)
+
+honduras<-data.table()
+honduras<-cropset_at_full[which(cropset_at_full$'Country Name'=='Honduras')]
+honduras_list<-split(honduras, honduras$Key)
+
+nicaragua<-data.table()
+nicaragua<-cropset_at_full[which(cropset_at_full$'Country Name'=='Nicaragua')]
+nicaragua_list<-split(nicaragua, nicaragua$Key)
+
+svg<-data.table()
+svg<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Vincent and the Grenadines')]
+svg_list<-split(svg, svg$Key)
+
+grenada<-data.table()
+grenada<-cropset_at_full[which(cropset_at_full$'Country Name'=='Grenada')]
+grenada_list<-split(grenada, grenada$Key)
+
+costa_rica<-data.table()
+costa_rica<-cropset_at_full[which(cropset_at_full$'Country Name'=='Costa Rica')]
+costa_rica_list<-split(costa_rica, costa_rica$Key)
+
+turks<-data.table()
+turks<-cropset_at_full[which(cropset_at_full$'Country Name'=='Turks and Caicos Islands')]
+turks_list<-split(turks, turks$Key)
+
+domrep<-data.table()
+domrep<-cropset_at_full[which(cropset_at_full$'Country Name'=='Dominican Republic')]
+domrep_list<-split(domrep, domrep$Key)
+
+jamaica<-data.table()
+jamaica<-cropset_at_full[which(cropset_at_full$'Country Name'=='Jamaica')]
+jamaica_list<-split(jamaica, jamaica$Key)
+
+virgin<-data.table()
+virgin<-cropset_at_full[which(cropset_at_full$'Country Name'=='United States Virgin Islands')]
+virgin_list<-split(virgin, virgin$Key)
+
+skn<-data.table()
+skn<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Kitts and Nevis')]
+skn_list<-split(skn, skn$Key)
+
+elsalvador<-data.table()
+elsalvador<-cropset_at_full[which(cropset_at_full$'Country Name'=='El Salvador')]
+elsalvador_list<-split(elsalvador, elsalvador$Key)
+
+barbados<-data.table()
+barbados<-cropset_at_full[which(cropset_at_full$'Country Name'=='Barbados')]
+barbados_list<-split(barbados, barbados$Key)
+
+columbia<-data.table()
+columbia<-cropset_at_full[which(cropset_at_full$'Country Name'=='Colombia')]
+columbia_list<-split(columbia, columbia$Key)
+
+panama<-data.table()
+panama<-cropset_at_full[which(cropset_at_full$'Country Name'=='Panama')]
+panama_list<-split(panama, panama$Key)
+
+
+
+#########################################
+#with the above, we now have a clear 
+#collection of hurricanes and their
+#respective distances from each centroid
+#in each relevant country
+#########################################
+
+
+
+
+
+######################################Using world map to plot hurricanes in the Caribbean######################
+
+
+
+coords2country = function(points_hur)
+{
+  # prepare a SpatialPolygons object with one poly per country
+  countries = map('worldHires', fill=TRUE, col="transparent", plot=FALSE)
+  names = sapply(strsplit(countries$names, ":"), function(x) x[1])
+  
+  
+  #clean up polygons that are out of bounds
+  filter = countries$x < -180 & !is.na(countries$x)
+  countries$x[filter] = -180
+  
+  filter = countries$x > 180 & !is.na(countries$x)
+  countries$x[filter] = 180
+  
+  countriesSP <- getMap(resolution='high')
+  #countriesSP <- getMap(resolution='high') #you could use high res map from rworldxtra if you were concerned about detail
+  
+  # convert our list of points to a SpatialPoints object
+  
+  pointsSP = SpatialPoints(points_hur, proj4string=CRS(" +proj=utm +zone=31 +ellps=clrk66 +units=m +no_defs "))
+  
+  #setting CRS directly to that from rworldmap
+  pointsSP = SpatialPoints(points_hur, proj4string=CRS(proj4string(countriesSP)))  
+  
+  #gBuffer(pointsSP, width=1000)
+  # use 'over' to get indices of the Polygons object containing each point 
+  indices = over(pointsSP, countriesSP)
+  
+  # return the ADMIN names of each country
+  indices$ADMIN  
+}
+
+
+
+#Plotting hurricanes for 2005, one fo the most active hurricane seasons in the period of focus.
+
+points_hur=data.frame(-hurr_interpolated$Long.W[1897:1915],hurr_interpolated$Lat.N[1897:1915])
+
+# plot them on a map
+map("worldHires", xlim=c(-119, -40), ylim=c(0, 30))
+lines(points_hur$X.hurr_interpolated.Long.W.1897.1915., points_hur$hurr_interpolated.Lat.N.1897.1915., col="Red")
+lines(-hurr_interpolated$Long.W[1916:1948], hurr_interpolated$Lat.N[1916:1948], col="blue")
+lines(-hurr_interpolated$Long.W[2053:2069], hurr_interpolated$Lat.N[2053:2069], col="green") 
+lines(-hurr_interpolated$Long.W[1967:1991], hurr_interpolated$Lat.N[1967:1991], col="purple")
+lines(-hurr_interpolated$Long.W[1992:2028], hurr_interpolated$Lat.N[1992:2028], col="pink")
+
+
+
+
+#############################################
+#So this worked.
+############################################
 
 
