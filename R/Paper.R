@@ -1759,6 +1759,11 @@ points(-66.47917,18.47917,col='green') #This are is being recorded as NA but is 
 
 
 #Callin the file cropset_at_full from file for speed rathe than formulate by code each time
+cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\hurricane\\R\\hurricane\\R\\cropset_at_full.csv")
+
+
+
+
 
 cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Paper Data\\cropset_at_full.csv")
 colnames(cropset_at_full)[15]<-"Lat.y"
@@ -1786,46 +1791,48 @@ prico@bbox
 
 #Puerto Rico shapefile
 
-pr<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PRI_shp", layer = "gadm36_PRI_1")
-
-#plot(pr)
-prbox<-pr@bbox
-
-
-
-#Create the cropped sets for  each country
-prico_cropset<-cropset_at_full[which(cropset_at_full$Long>=-(prbox[1,2]) & cropset_at_full$Long<=-(prbox[1,1]) & cropset_at_full$Lat.y>=(prbox[2,1]) & cropset_at_full$Lat.y <=(prbox[2,2])),]
-
-#Testing the if function with a simple matrix.
-
-# for(p in 1: nrow(mn)){
-#   if(mn$m[p]==2){                #If you get an error saying only first element will be 
-#                                                              #used, it means you arent using the identifier; in this 
-#                                                              #case p
-#  mn$m[p]<-"water"
-#     
-#   }}
-
-###################################################################################################################
-for(p in 1: nrow(prico_cropset)){
-  if(is.na(prico_cropset$`Country Name`[p])){                #If you get an error saying only first element will be 
-    #used, it means you arent using the identifier; in this 
-    #case p
-    prico_cropset$`Country Name`[p]<-"water"
-    
-  }}
-
-
-
-
-
-#Fill locations in dataset that belong to  "Puerto Rico"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=(-prbox[1,2]) & cropset_at_full$Long[p]<=(-prbox[1,1]) & cropset_at_full$Lat.y[p]>=(prbox[2,1]) & cropset_at_full$Lat.y[p]<=(prbox[2,2]) & is.na(cropset_at_full$`Country Name`[p]))
-  {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
-  
-}
+# pr<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PRI_shp", layer = "gadm36_PRI_1")
+# 
+# #plot(pr)
+# prbox<-pr@bbox
+# 
+# 
+# 
+# #Create the cropped sets for  each country
+# prico_cropset<-cropset_at_full[which(cropset_at_full$Long>=-(prbox[1,2]) & cropset_at_full$Long<=-(prbox[1,1]) & cropset_at_full$Lat.y>=(prbox[2,1]) & cropset_at_full$Lat.y <=(prbox[2,2])),]
+# 
+# #Testing the if function with a simple matrix.
+# 
+# # for(p in 1: nrow(mn)){
+# #   if(mn$m[p]==2){                #If you get an error saying only first element will be 
+# #                                                              #used, it means you arent using the identifier; in this 
+# #                                                              #case p
+# #  mn$m[p]<-"water"
+# #     
+# #   }}
+# 
+# 
+# #TEST
+# ###################################################################################################################
+# # for(p in 1: nrow(prico_cropset)){
+# #   if(is.na(prico_cropset$`Country Name`[p])){                #If you get an error saying only first element will be 
+# #     #used, it means you arent using the identifier; in this 
+# #     #case p
+# #     prico_cropset$`Country Name`[p]<-"water"
+# #     
+# #   }}
+# ######################################################################################################################
+# 
+# 
+# 
+# 
+# #Fill locations in dataset that belong to  "Puerto Rico"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=(-prbox[1,2]) & cropset_at_full$Long[p]<=(-prbox[1,1]) & cropset_at_full$Lat.y[p]>=(prbox[2,1]) & cropset_at_full$Lat.y[p]<=(prbox[2,2]) & is.na(cropset_at_full$`Country Name`[p]))
+#   {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
+#   
+# }
 
 
 
@@ -1892,6 +1899,7 @@ for(p in 1: nrow(cropset_at_full)){
   {cropset_at_full$`Country Name`[p]<-"Antigua and Barbuda"}
   
 }
+
 
 
 
@@ -1979,7 +1987,7 @@ for(p in 1: nrow(cropset_at_full)){
 }
 
 
-cur<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_ATG_shp", layer = "gadm36_ATG_1")
+cur<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CUW_shp", layer = "gadm36_CUW_0")
 
 curbox<-cur@bbox
 
@@ -1999,20 +2007,18 @@ cymbox<-cym@bbox
 #Fill locations in dataset that belong to "Cayman"
 for(p in 1: nrow(cropset_at_full)){
   
+  
   if(cropset_at_full$Long[p]>=-(cymbox[1,2]) & cropset_at_full$Long[p]<=-(cymbox[1,1]) & cropset_at_full$Lat.y[p]>=(cymbox[2,1]) & cropset_at_full$Lat.y[p]<=(cymbox[2,2]))
     
   {cropset_at_full$`Country Name`[p]<-"Cayman"}
   
-  if(cropset_at_full$Long[p]== (79.77083) & cropset_at_full$Lat.y[p]==(19.77083))
-    
-  {cropset_at_full$`Country Name`[p]<-"Cayman"}
   
-
   
 }
 
-#Need extra steps to fully identify cayman
 
+#Need  extra steps to fully identify cayman: Fill cells 1945666:1946001
+cropset_at_full$`Country Name`[1945666:1946001]<-"Cayman"
 
 
 
@@ -2074,12 +2080,12 @@ gtm<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial 
 
 gtmbox<-gtm@bbox
 
-#Fill locations in dataset that belong to  "A&B"
+#Fill locations in dataset that belong to  "Guatemala"
 for(p in 1: nrow(cropset_at_full)){
   
-  if(cropset_at_full$Long[p]>=-(ABbox[1,2]) & cropset_at_full$Long[p]<=-(ABbox[1,1]) & cropset_at_full$Lat.y[p]>=(ABbox[2,1]) & cropset_at_full$Lat.y[p]<=(ABbox[2,2]))
+  if(cropset_at_full$Long[p]>=-(gtmbox[1,2]) & cropset_at_full$Long[p]<=-(gtmbox[1,1]) & cropset_at_full$Lat.y[p]>=(gtmbox[2,1]) & cropset_at_full$Lat.y[p]<=(gtmbox[2,2]))
     
-  {cropset_at_full$`Country Name`[p]<-"Antigua and Barbuda"}
+  {cropset_at_full$`Country Name`[p]<-"Guatemala"}
   
 }
 
@@ -2121,19 +2127,16 @@ for(p in 1: nrow(cropset_at_full)){
   {cropset_at_full$`Country Name`[p]<-"Haiti"}
   
   
-  #Extra Help
-  
-  if(cropset_at_full$Long[p]=(73.89583)  & cropset_at_full$Lat.y[p]<=(18.02083))
-    
-  {cropset_at_full$`Country Name`[p]<-"Haiti"}
-  
-  if(cropset_at_full$Long[p]=(73.85417)  & cropset_at_full$Lat.y[p]<=(18.02083))
-    
-  {cropset_at_full$`Country Name`[p]<-"Haiti"}
-  
-  
   
 }
+
+#Extra Help Filling cells:
+
+cropset_at_full$`Country Name`[3058877:3059301]<-"Haiti"
+
+
+
+
 
 kna<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_KNA_shp", layer = "gadm36_KNA_1")
 
@@ -2174,6 +2177,9 @@ for(p in 1: nrow(cropset_at_full)){
   
 }
 
+cropset_at_full$`Country Name`[3067614:3068213]<-"Saint Martin"
+
+
 mex<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MEX_shp", layer = "gadm36_MEX_1")
 
 mexbox<-mex@bbox
@@ -2197,7 +2203,7 @@ for(p in 1: nrow(cropset_at_full)){
   if(cropset_at_full$Long[p]>=-(mtqbox[1,2]) & cropset_at_full$Long[p]<=-(mtqbox[1,1]) & cropset_at_full$Lat.y[p]>=(mtqbox[2,1]) & cropset_at_full$Lat.y[p]<=(mtqbox[2,2]))
     
   {cropset_at_full$`Country Name`[p]<-"Martinique"}
-
+  
   
 }
 
@@ -2241,15 +2247,14 @@ for(p in 1: nrow(cropset_at_full)){
   {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
   
   
-  #Extra Help Needed 
-  
-  if(cropset_at_full$Long[p]== (67.14583) & cropset_at_full$Lat.y[p]==(18.52083))
-    
-  {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
-  
-  
   
 }
+
+#Extra Help Needed 
+
+
+cropset_at_full$`Country Name`[2658418:2659166]<-"Puerto Rico"
+
 
 
 slv<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_SLV_shp", layer = "gadm36_SLV_1")
@@ -2308,19 +2313,29 @@ for(p in 1: nrow(cropset_at_full)){
   
 }
 
-ven<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VEN_shp", layer = "gadm36_VEN_1")
+#########################################################################################################################################################
+#Venezuela's marine borders extend as far as Puerto Rico and hence was overriding the countries that lie between these two countries. As such this section 
+#of the algorithm had to be removed in order to get the names accurately.
+##########################################################################################################################################################
 
-venbox<-ven@bbox
-
-#Fill locations in dataset that belong to Venezuela
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(venbox[1,2]) & cropset_at_full$Long[p]<=-(venbox[1,1]) & cropset_at_full$Lat.y[p]>=(venbox[2,1]) & cropset_at_full$Lat.y[p]<=(venbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Venezuela"}
-  
-  
-}
+# ven<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VEN_shp", layer = "gadm36_VEN_2")
+# 
+# venbox<-ven@bbox
+# 
+# #Fill locations in dataset that belong to Venezuela
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(venbox[1,2]) & cropset_at_full$Long[p]<=-(venbox[1,1]) & cropset_at_full$Lat.y[p]>=(venbox[2,1]) & cropset_at_full$Lat.y[p]<=(venbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Venezuela"}
+#   
+#   
+# }
+# 
+# #Venezuela' smarine borders extend as far as Puerto Rico so we have to leave it out of the code since it overrides the countries between these two countries.
+# 
+#  ven1<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\capa-de-venezuela\\Venezuela Esequibo", layer= "Limites_Internacionales_Venezuela")
+# 
 
 vgb<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VGB_shp", layer = "gadm36_VGB_1")
 
@@ -2350,144 +2365,197 @@ for(p in 1: nrow(cropset_at_full)){
   
 }
 
+boxlist<-list(virbox, brbbox, colbox, ABbox, abwbox, bhsbox, blzbox, cribox, cubbox, curbox, cymbox, dmabox, glpbox, gtmbox, guybox, hndbox, htibox, jmbox, knabox, lcabox, mafbox, mexbox, mtqbox, nicbox, panbox, prbox, slvbox, tcabox, ttobox)
+
+
+#Countries where locations were not assigned- they were manually entered
+
+cropset_at_full$`Country Name`[3107996:3108193]<-"Saint Barthelemy"
+cropset_at_full$`Country Name`[3122237:3122632]<-"Saint Barthelemy"
+cropset_at_full$`Country Name`[3151635:3151823]<-"St Croix"
+cropset_at_full$`Country Name`[3303999:3318849]<-"Montserrat" #:3308720]<-"Montserrat"
+cropset_at_full$`Country Name`[3746857:3746997]<-"Martinique"
+cropset_at_full$`Country Name`[3338388:3371927]<-"Guadeloupe"
+cropset_at_full$`Country Name`[3734213:3759981]<-"Martinique"
+cropset_at_full$`Country Name`[4124593:4124690]<-"Saint Vincent and the Grenadines"
+cropset_at_full$`Country Name`[4131243:4292136]<-"Saint Vincent and the Grenadines"
+cropset_at_full$`Country Name`[4410773:4410818]<-"Venezuela"
+cropset_at_full$`Country Name`[4448486:4448690]<-"Venezuela"
+cropset_at_full$`Country Name`[4611625:4569958]<-"Venezuela"
+cropset_at_full$`Country Name`[4431756:4569906]<-"Venezuela"
+cropset_at_full$`Country Name`[4320298:4424477]<-"Venezuela"
 
 
 
 #Check the numner of cell entries that are NA 
 sum(length(which(is.na(cropset_at_full$`Country Name`))))
 
-#After filling, the total amount of NA locations fell from 228050 to 3783
+#After filling, the total amount of NA locations fell from 228050 to 0
 
 
 ########################################Collect data by country######################################################
 mexico<-data.table()
-mexico<-cropset_at_full[which(cropset_at_full$`Country Name`=='Mexico')]
-mexico_list<-split(mexico, mexico$Key)
+mexico<-subset(cropset_at_full,cropset_at_full$`Country Name`== 'Mexico')
+mexico_list<-split(mexico, mexico$Key, drop = TRUE)
+write.table(mexico, file="mexico.csv",sep=",",row.names=F)
+
+
 
 puerto<-data.table()
-puerto<-cropset_at_full[which(cropset_at_full$'Country Name'=='Puerto Rico')]
-puerto_list<-split(puerto, puerto$Key)
+puerto<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Puerto Rico')
+puerto_list<-split(puerto, puerto$Key , drop = TRUE)
+write.table(puerto, file="puerto.csv",sep=",",row.names=F)
 
 bahamas<-data.table()
-bahamas<-cropset_at_full[which(cropset_at_full$'Country Name'=='The Bahamas')]
-bahamas_list<-split(bahamas, bahamas$Key)
+bahamas<-subset(cropset_at_full,cropset_at_full$`Country Name`=='The Bahamas')
+bahamas_list<-split(bahamas, bahamas$Key, drop = TRUE)
+write.table(bahamas, file="bahamas.csv",sep=",",row.names=F)
 
 haiti<-data.table()
-haiti<-cropset_at_full[which(cropset_at_full$'Country Name'=='Haiti')]
-haiti_list<-split(haiti,haiti$Key)
+haiti<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Haiti')
+haiti_list<-split(haiti,haiti$Key, drop = TRUE)
+write.table(haiti, file="haiti.csv",sep=",",row.names=F)
 
 cayman<-data.table()
-cayman<-cropset_at_full[which(cropset_at_full$'Country Name' =='Cayman Islands')]
-cayman_list<-split(cayman, cayman$Key)
+cayman<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Cayman Islands')
+cayman_list<-split(cayman, cayman$Key, drop = TRUE)
+write.table(cayman, file="cayman.csv",sep=",",row.names=F)
 
 anguilla<-data.table()
-anguilla<-cropset_at_full[which(cropset_at_full$'Country Name'=='Anguilla')]
-anguilla_list<-split(anguilla, anguilla$Key)
+anguilla<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Anguilla')
+anguilla_list<-split(anguilla, anguilla$Key, drop = TRUE)
+write.table(anguilla, file="anguilla.csv",sep=",",row.names=F)
 
 guatemala<-data.table()
-guatemala<-cropset_at_full[which(cropset_at_full$'Country Name'=='Guatemala')]
-guatemala_list<-split(guatemala, guatemala$Key)
+guatemala<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Guatemala')
+guatemala_list<-split(guatemala, guatemala$Key, drop = TRUE)
+write.table(guatemala, file="guatemala.csv",sep=",",row.names=F)
 
 montserrat<-data.table()
-montserrat<-cropset_at_full[which(cropset_at_full$'Country Name'=='Montserrat')]
-montserrat_list<-split(montserrat, montserrat$Key)
+montserrat<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Montserrat')
+montserrat_list<-split(montserrat, montserrat$Key, drop = TRUE)
+write.table(montserrat, file="montserrat.csv",sep=",",row.names=F)
 
 dominica<-data.table()
-dominica<-cropset_at_full[which(cropset_at_full$'Country Name'=='Dominica')]
-dominica_list<-split(dominica, dominica$Key)
+dominica<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Dominica')
+dominica_list<-split(dominica, dominica$Key, drop = TRUE)
+write.table(dominica, file="dominica.csv",sep=",",row.names=F)
 
 
 stlucia<-data.table()
-stlucia<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Lucia')]
-stlucia_list<-split(stlucia, stlucia$Key)
+stlucia<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Saint Lucia')
+stlucia_list<-split(stlucia, stlucia$Key, drop = TRUE)
+write.table(stlucia, file="stlucia.csv",sep=",",row.names=F)
 
 aruba<-data.table()
-aruba<-cropset_at_full[which(cropset_at_full$'Country Name'=='Aruba')]
-aruba_list<-split(aruba, aruba$Key)
+aruba<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Aruba')
+aruba_list<-split(aruba, aruba$Key, drop = TRUE)
+write.table(aruba, file="aruba.csv",sep=",",row.names=F)
 
 tt<-data.table()
-tt<-cropset_at_full[which(cropset_at_full$'Country Name'=='Trinidad and Tobago')]
-tt_list<-split(tt, tt$Key)
+tt<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Trinidad and Tobago')
+tt_list<-split(tt, tt$Key, drop = TRUE)
+write.table(tt, file="tt.csv",sep=",",row.names=F)
 
 guyana<-data.table()
-guyana<-cropset_at_full[which(cropset_at_full$'Country Name'=='Guyana')]
-guyana_list<-split(guyana, guyana$Key)
+guyana<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Guyana')
+guyana_list<-split(guyana, guyana$Key, drop = TRUE)
+write.table(guyana, file="guyana.csv",sep=",",row.names=F)
 
 cuba<-data.table()
-cuba<-cropset_at_full[which(cropset_at_full$'Country Name'=='Cuba')]
-cuba_list<-split(cuba, cuba$Key)
+cuba<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Cuba')
+cuba_list<-split(cuba, cuba$Key, drop = TRUE)
+write.table(cuba, file="cuba.csv",sep=",",row.names=F)
 
 bvi<-data.table()
-bvi<-cropset_at_full[which(cropset_at_full$'Country Name'=='British Virgin Islands')]
-bvi_list<-split(bvi, bvi$Key)
+bvi<-subset(cropset_at_full,cropset_at_full$`Country Name`=='British Virgin Islands')
+bvi_list<-split(bvi, bvi$Key, drop = TRUE)
+write.table(bvi, file="bvi.csv",sep=",",row.names=F)
 
 belize<-data.table()
-belize<-cropset_at_full[which(cropset_at_full$'Country Name'=='Belize')]
-belize_list<-split(belize, belize$Key)
+belize<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Belize')
+belize_list<-split(belize, belize$Key, drop = TRUE)
+write.table(belize, file="belize.csv",sep=",",row.names=F)
 
 stmartin<-data.table()
-stmartin<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Martin')]
-stmartin_list<-split(stmartin, stmartin$Key)
+stmartin<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Saint Martin')
+stmartin_list<-split(stmartin, stmartin$Key, drop = TRUE)
+write.table(stmartin, file="stmartin.csv",sep=",",row.names=F)
 
 AB<-data.table()
-AB<-cropset_at_full[which(cropset_at_full$'Country Name'=='Antigua and Barbuda')]
-AB_list<-split(AB, AB$Key)
+AB<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Antigua and Barbuda')
+AB_list<-split(AB, AB$Key, drop = TRUE)
+write.table(AB, file="AB.csv",sep=",",row.names=F)
 
 honduras<-data.table()
-honduras<-cropset_at_full[which(cropset_at_full$'Country Name'=='Honduras')]
+honduras<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Honduras')
 honduras_list<-split(honduras, honduras$Key)
+write.table(honduras, file="honduras.csv",sep=",",row.names=F)
 
 nicaragua<-data.table()
-nicaragua<-cropset_at_full[which(cropset_at_full$'Country Name'=='Nicaragua')]
-nicaragua_list<-split(nicaragua, nicaragua$Key)
+nicaragua<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Nicaragua')
+nicaragua_list<-split(nicaragua, nicaragua$Key, drop = TRUE)
+write.table(nicaragua, file="nicaragua.csv",sep=",",row.names=F)
 
 svg<-data.table()
-svg<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Vincent and the Grenadines')]
-svg_list<-split(svg, svg$Key)
+svg<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Saint Vincent and the Grenadines')
+svg_list<-split(svg, svg$Key, drop = TRUE)
+write.table(svg, file="svg.csv",sep=",",row.names=F)
 
 grenada<-data.table()
-grenada<-cropset_at_full[which(cropset_at_full$'Country Name'=='Grenada')]
-grenada_list<-split(grenada, grenada$Key)
+grenada<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Grenada')
+grenada_list<-split(grenada, grenada$Key, drop = TRUE)
+write.table(grenada, file="grenada.csv",sep=",",row.names=F)
 
 costa_rica<-data.table()
-costa_rica<-cropset_at_full[which(cropset_at_full$'Country Name'=='Costa Rica')]
-costa_rica_list<-split(costa_rica, costa_rica$Key)
+costa_rica<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Costa Rica')
+costa_rica_list<-split(costa_rica, costa_rica$Key, drop = TRUE)
+write.table(costa_rica, file="costa_rica.csv",sep=",",row.names=F)
 
 turks<-data.table()
-turks<-cropset_at_full[which(cropset_at_full$'Country Name'=='Turks and Caicos Islands')]
-turks_list<-split(turks, turks$Key)
+turks<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Turks and Caicos Islands')
+turks_list<-split(turks, turks$Key, drop = TRUE)
+write.table(turks, file="turks.csv",sep=",",row.names=F)
 
 domrep<-data.table()
-domrep<-cropset_at_full[which(cropset_at_full$'Country Name'=='Dominican Republic')]
-domrep_list<-split(domrep, domrep$Key)
+domrep<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Dominican Republic')
+domrep_list<-split(domrep, domrep$Key, drop = TRUE)
+write.table(domrep, file="domrep.csv",sep=",",row.names=F)
 
 jamaica<-data.table()
-jamaica<-cropset_at_full[which(cropset_at_full$'Country Name'=='Jamaica')]
-jamaica_list<-split(jamaica, jamaica$Key)
+jamaica<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Jamaica')
+jamaica_list<-split(jamaica, jamaica$Key, drop= TRUE)
+write.table(jamaica, file="jamaica.csv",sep=",",row.names=F)
 
 virgin<-data.table()
-virgin<-cropset_at_full[which(cropset_at_full$'Country Name'=='United States Virgin Islands')]
-virgin_list<-split(virgin, virgin$Key)
+virgin<-subset(cropset_at_full,cropset_at_full$`Country Name`=='United States Virgin Islands')
+virgin_list<-split(virgin, virgin$Key, drop = TRUE)
+write.table(virgin, file="virgin.csv",sep=",",row.names=F)
 
 skn<-data.table()
-skn<-cropset_at_full[which(cropset_at_full$'Country Name'=='Saint Kitts and Nevis')]
-skn_list<-split(skn, skn$Key)
+skn<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Saint Kitts and Nevis')
+skn_list<-split(skn, skn$Key, drop = TRUE)
+write.table(skn, file="skn.csv",sep=",",row.names=F)
 
 elsalvador<-data.table()
-elsalvador<-cropset_at_full[which(cropset_at_full$'Country Name'=='El Salvador')]
-elsalvador_list<-split(elsalvador, elsalvador$Key)
+elsalvador<-subset(cropset_at_full,cropset_at_full$`Country Name`=='El Salvador')
+elsalvador_list<-split(elsalvador, elsalvador$Key, drop = TRUE)
+write.table(elsalvador, file="elsalvador.csv",sep=",",row.names=F)
 
 barbados<-data.table()
-barbados<-cropset_at_full[which(cropset_at_full$'Country Name'=='Barbados')]
-barbados_list<-split(barbados, barbados$Key)
+barbados<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Barbados')
+barbados_list<-split(barbados, barbados$Key, drop = TRUE)
+write.table(barbados, file="barbados.csv",sep=",",row.names=F)
 
 columbia<-data.table()
-columbia<-cropset_at_full[which(cropset_at_full$'Country Name'=='Colombia')]
-columbia_list<-split(columbia, columbia$Key)
+columbia<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Colombia')
+columbia_list<-split(columbia, columbia$Key, drop = TRUE)
+write.table(columbia, file="columbia.csv",sep=",",row.names=F)
 
 panama<-data.table()
-panama<-cropset_at_full[which(cropset_at_full$'Country Name'=='Panama')]
-panama_list<-split(panama, panama$Key)
+panama<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Panama')
+panama_list<-split(panama, panama$Key, drop = TRUE)
+write.table(panama, file="panama.csv",sep=",",row.names=F)
 
 
 
