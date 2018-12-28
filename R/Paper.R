@@ -28,6 +28,7 @@ install.packages("readr", dependencies=TRUE)
 install.packages("‘HURDAT", dependencies = TRUE)
 #install.packages("C:/Users/goulb/Downloads/HURDAT_0.2.0.tar.gz", repos = NULL, type = "source")
 install.packages("stringr", dependencies = TRUE)
+install.packages("C:/Users/goulb/Downloads/weathermetrics_1.2.2.tar.gz", repos = NULL, type = "source")
 
 library(spData)
 library(spdep)
@@ -55,6 +56,7 @@ library(lubridate)
 library(readr)
 library(HURDAT)
 library(stringr)
+library(weathermetrics)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LETS TRY ON OUR OWN NOW~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -1760,7 +1762,8 @@ points(-66.47917,18.47917,col='green') #This are is being recorded as NA but is 
 
 #Callin the file cropset_at_full from file for speed rathe than formulate by code each time
 cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\hurricane\\R\\hurricane\\R\\cropset_at_full.csv")
-
+colnames(cropset_at_full)[15]<-"Lat.y"
+colnames(cropset_at_full)[16]<-"Country Name"
 
 
 
@@ -1775,615 +1778,664 @@ cropset_at_full$`Country Name`<-as.character(cropset_at_full$`Country Name`)
 
 
 
-
-
-######################################################
-#Lets locate the areas that are labeled as NA by using
-#shape files and the extents. 
-######################################################
-
-prico<-readOGR(dsn = "C:\\Users\\goulb\\Downloads\\tl_2016_72_cousub", layer = "tl_2016_72_cousub")
-
-#Use @bbox to identify the extents of the island.
-#Now to test it.
-prico@bbox
-
-
-#Puerto Rico shapefile
-
-# pr<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PRI_shp", layer = "gadm36_PRI_1")
-# 
-# #plot(pr)
-# prbox<-pr@bbox
 # 
 # 
+# ######################################################
+# #Lets locate the areas that are labeled as NA by using
+# #shape files and the extents. 
+# ######################################################
 # 
-# #Create the cropped sets for  each country
-# prico_cropset<-cropset_at_full[which(cropset_at_full$Long>=-(prbox[1,2]) & cropset_at_full$Long<=-(prbox[1,1]) & cropset_at_full$Lat.y>=(prbox[2,1]) & cropset_at_full$Lat.y <=(prbox[2,2])),]
+# prico<-readOGR(dsn = "C:\\Users\\goulb\\Downloads\\tl_2016_72_cousub", layer = "tl_2016_72_cousub")
 # 
-# #Testing the if function with a simple matrix.
-# 
-# # for(p in 1: nrow(mn)){
-# #   if(mn$m[p]==2){                #If you get an error saying only first element will be 
-# #                                                              #used, it means you arent using the identifier; in this 
-# #                                                              #case p
-# #  mn$m[p]<-"water"
-# #     
-# #   }}
+# #Use @bbox to identify the extents of the island.
+# #Now to test it.
+# prico@bbox
 # 
 # 
-# #TEST
-# ###################################################################################################################
-# # for(p in 1: nrow(prico_cropset)){
-# #   if(is.na(prico_cropset$`Country Name`[p])){                #If you get an error saying only first element will be 
-# #     #used, it means you arent using the identifier; in this 
-# #     #case p
-# #     prico_cropset$`Country Name`[p]<-"water"
-# #     
-# #   }}
-# ######################################################################################################################
+# #Puerto Rico shapefile
+# 
+# # pr<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PRI_shp", layer = "gadm36_PRI_1")
+# # 
+# # #plot(pr)
+# # prbox<-pr@bbox
+# # 
+# # 
+# # 
+# # #Create the cropped sets for  each country
+# # prico_cropset<-cropset_at_full[which(cropset_at_full$Long>=-(prbox[1,2]) & cropset_at_full$Long<=-(prbox[1,1]) & cropset_at_full$Lat.y>=(prbox[2,1]) & cropset_at_full$Lat.y <=(prbox[2,2])),]
+# # 
+# # #Testing the if function with a simple matrix.
+# # 
+# # # for(p in 1: nrow(mn)){
+# # #   if(mn$m[p]==2){                #If you get an error saying only first element will be 
+# # #                                                              #used, it means you arent using the identifier; in this 
+# # #                                                              #case p
+# # #  mn$m[p]<-"water"
+# # #     
+# # #   }}
+# # 
+# # 
+# # #TEST
+# # ###################################################################################################################
+# # # for(p in 1: nrow(prico_cropset)){
+# # #   if(is.na(prico_cropset$`Country Name`[p])){                #If you get an error saying only first element will be 
+# # #     #used, it means you arent using the identifier; in this 
+# # #     #case p
+# # #     prico_cropset$`Country Name`[p]<-"water"
+# # #     
+# # #   }}
+# # ######################################################################################################################
+# # 
+# # 
+# # 
+# # 
+# # #Fill locations in dataset that belong to  "Puerto Rico"
+# # for(p in 1: nrow(cropset_at_full)){
+# #   
+# #   if(cropset_at_full$Long[p]>=(-prbox[1,2]) & cropset_at_full$Long[p]<=(-prbox[1,1]) & cropset_at_full$Lat.y[p]>=(prbox[2,1]) & cropset_at_full$Lat.y[p]<=(prbox[2,2]) & is.na(cropset_at_full$`Country Name`[p]))
+# #   {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
+# #   
+# # }
 # 
 # 
 # 
+# #Shape file Jamaica
 # 
-# #Fill locations in dataset that belong to  "Puerto Rico"
+#jam<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_JAM_shp", layer = "gadm36_JAM_1")
+# 
+# jmbox<-jam@bbox
+# 
+# #Fill locations in dataset that belong to  "Jamaica"
 # for(p in 1: nrow(cropset_at_full)){
 #   
-#   if(cropset_at_full$Long[p]>=(-prbox[1,2]) & cropset_at_full$Long[p]<=(-prbox[1,1]) & cropset_at_full$Lat.y[p]>=(prbox[2,1]) & cropset_at_full$Lat.y[p]<=(prbox[2,2]) & is.na(cropset_at_full$`Country Name`[p]))
+#   if(cropset_at_full$Long[p]>=-(jmbox[1,2]) & cropset_at_full$Long[p]<=-(jmbox[1,1]) & cropset_at_full$Lat.y[p]>=(jmbox[2,1]) & cropset_at_full$Lat.y[p]<=(jmbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<- "Jamaica"
+#   }
+#   
+# }
+# 
+# 
+# #Shapefile for Aruba
+# 
+# aruba<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_ABW_shp", layer = "gadm36_ABW_0")
+# 
+# abwbox<-aruba@bbox
+# 
+# #Fill locations in dataset that belong to "Aruba"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(abwbox[1,2]) & cropset_at_full$Long[p]<=-(abwbox[1,1]) & cropset_at_full$Lat.y[p]>=(abwbox[2,1]) & cropset_at_full$Lat.y[p]<=(abwbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Aruba"}
+#   
+# }
+# 
+# 
+# #Shapefile for Anguilla
+# 
+# anguilla<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_AIA_shp", layer = "gadm36_AIA_0")
+# 
+# angbox<-anguilla@bbox
+# 
+# #Fill locations in dataset that belong to  "Anguilla"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(angbox[1,2]) & cropset_at_full$Long[p]<=-(angbox[1,1]) & cropset_at_full$Lat.y[p]>=(angbox[2,1]) & cropset_at_full$Lat.y[p]<=(angbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Anguilla"}
+#   
+# }
+# 
+# 
+# #Shapefile for A&B
+# 
+# AB<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_ATG_shp", layer = "gadm36_ATG_1")
+# 
+# ABbox<-AB@bbox
+# 
+# #Fill locations in dataset that belong to "Antigua and Barbuda"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(ABbox[1,2]) & cropset_at_full$Long[p]<=-(ABbox[1,1]) & cropset_at_full$Lat.y[p]>=(ABbox[2,1]) & cropset_at_full$Lat.y[p]<=(ABbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Antigua and Barbuda"}
+#   
+# }
+# 
+# 
+# 
+# 
+# bhs<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_BHS_shp", layer = "gadm36_BHS_1")
+# 
+# bhsbox<-bhs@bbox
+# 
+# #Fill locations in dataset that belong to Puerto Rico with the name "Bahamas"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(bhsbox[1,2]) & cropset_at_full$Long[p]<=-(bhsbox[1,1]) & cropset_at_full$Lat.y[p]>=(bhsbox[2,1]) & cropset_at_full$Lat.y[p]<=(bhsbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Bahamas"}
+#   
+# }
+# 
+# 
+# blz<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_BLZ_shp", layer = "gadm36_BLZ_1")
+# 
+# blzbox<-blz@bbox
+# 
+# #Fill locations in dataset that belong to Puerto Rico with the name "Belize"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(blzbox[1,2]) & cropset_at_full$Long[p]<=-(blzbox[1,1]) & cropset_at_full$Lat.y[p]>=(blzbox[2,1]) & cropset_at_full$Lat.y[p]<=(blzbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Belize"}
+#   
+# }
+# 
+# 
+# brb<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_BRB_shp", layer = "gadm36_BRB_1")
+# 
+# brbbox<-brb@bbox
+# 
+# #Fill locations in dataset that belong to Puerto Rico with the name "Barbados"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(brbbox[1,2]) & cropset_at_full$Long[p]<=-(brbbox[1,1]) & cropset_at_full$Lat.y[p]>=(brbbox[2,1]) & cropset_at_full$Lat.y[p]<=(brbbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Barbados"}
+#   
+# }
+# 
+# 
+# col<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_COL_shp", layer = "gadm36_COL_1")
+# 
+# colbox<-col@bbox
+# 
+# #Fill locations in dataset that belong to "Columbia"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(colbox[1,2]) & cropset_at_full$Long[p]<=-(colbox[1,1]) & cropset_at_full$Lat.y[p]>=(colbox[2,1]) & cropset_at_full$Lat.y[p]<=(colbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Columbia"}
+#   
+# }
+# 
+# 
+# cri<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CRI_shp", layer = "gadm36_CRI_1")
+# 
+# cribox<-cri@bbox
+# 
+# #Fill locations in dataset that belong to "Costa Rica"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(cribox[1,2]) & cropset_at_full$Long[p]<=-(cribox[1,1]) & cropset_at_full$Lat.y[p]>=(cribox[2,1]) & cropset_at_full$Lat.y[p]<=(cribox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Costa Rica"}
+#   
+# }
+# 
+# 
+# cub<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CUB_shp", layer = "gadm36_CUB_1")
+# 
+# cubbox<-cub@bbox
+# 
+# #Fill locations in dataset that belong to "Cuba"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(cubbox[1,2]) & cropset_at_full$Long[p]<=-(cubbox[1,1]) & cropset_at_full$Lat.y[p]>=(cubbox[2,1]) & cropset_at_full$Lat.y[p]<=(cubbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Cuba"}
+#   
+# }
+# 
+# 
+# cur<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CUW_shp", layer = "gadm36_CUW_0")
+# 
+# curbox<-cur@bbox
+# 
+# #Fill locations in dataset that belong to "Curacao"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(curbox[1,2]) & cropset_at_full$Long[p]<=-(curbox[1,1]) & cropset_at_full$Lat.y[p]>=(curbox[2,1]) & cropset_at_full$Lat.y[p]<=(curbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Curacao"}
+#   
+# }
+# 
+# cym<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CYM_shp", layer = "gadm36_CYM_1")
+# 
+# cymbox<-cym@bbox
+# 
+# #Fill locations in dataset that belong to "Cayman"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   
+#   if(cropset_at_full$Long[p]>=-(cymbox[1,2]) & cropset_at_full$Long[p]<=-(cymbox[1,1]) & cropset_at_full$Lat.y[p]>=(cymbox[2,1]) & cropset_at_full$Lat.y[p]<=(cymbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Cayman"}
+#   
+#   
+#   
+# }
+# 
+# 
+# #Need  extra steps to fully identify cayman: Fill cells 1945666:1946001
+# cropset_at_full$`Country Name`[1945666:1946001]<-"Cayman"
+# 
+# 
+# 
+# 
+# dma<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_DMA_shp", layer = "gadm36_DMA_1")
+# 
+# dmabox<-dma@bbox
+# 
+# #Fill locations in dataset that belong to  "Dominica"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(dmabox[1,2]) & cropset_at_full$Long[p]<=-(dmabox[1,1]) & cropset_at_full$Lat.y[p]>=(dmabox[2,1]) & cropset_at_full$Lat.y[p]<=(dmabox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Dominica"}
+#   
+# }
+# 
+# dom<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_DOM_shp", layer = "gadm36_DOM_1")
+# 
+# dombox<-dom@bbox
+# 
+# #Fill locations in dataset that belong to  "Dom Rep."
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(dombox[1,2]) & cropset_at_full$Long[p]<=-(dombox[1,1]) & cropset_at_full$Lat.y[p]>=(dombox[2,1]) & cropset_at_full$Lat.y[p]<=(dombox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Dominican Republic"}
+#   
+# }
+# 
+# 
+# glp<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GLP_shp", layer = "gadm36_GLP_1")
+# 
+# glpbox<-glp@bbox
+# 
+# #Fill locations in dataset that belong to  "Guadaloupe"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(glpbox[1,2]) & cropset_at_full$Long[p]<=-(glpbox[1,1]) & cropset_at_full$Lat.y[p]>=(glpbox[2,1]) & cropset_at_full$Lat.y[p]<=(glpbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Guadeloupe"}
+#   
+# }
+# 
+# grd<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GRD_shp", layer = "gadm36_GRD_1")
+# 
+# grdbox<-grd@bbox
+# 
+# #Fill locations in dataset that belong to  "Grenada"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(grdbox[1,2]) & cropset_at_full$Long[p]<=-(grdbox[1,1]) & cropset_at_full$Lat.y[p]>=(grdbox[2,1]) & cropset_at_full$Lat.y[p]<=(grdbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Grenada"}
+#   
+# }
+# 
+# gtm<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GTM_shp", layer = "gadm36_GTM_1")
+# 
+# gtmbox<-gtm@bbox
+# 
+# #Fill locations in dataset that belong to  "Guatemala"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(gtmbox[1,2]) & cropset_at_full$Long[p]<=-(gtmbox[1,1]) & cropset_at_full$Lat.y[p]>=(gtmbox[2,1]) & cropset_at_full$Lat.y[p]<=(gtmbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Guatemala"}
+#   
+# }
+# 
+# guy<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GUY_shp", layer = "gadm36_GUY_1")
+# 
+# guybox<-guy@bbox
+# 
+# #Fill locations in dataset that belong to "Guyana"
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(guybox[1,2]) & cropset_at_full$Long[p]<=-(guybox[1,1]) & cropset_at_full$Lat.y[p]>=(guybox[2,1]) & cropset_at_full$Lat.y[p]<=(guybox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Guyana"}
+#   
+# }
+# 
+# hnd<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_HND_shp", layer = "gadm36_HND_1")
+# 
+# hndbox<-hnd@bbox
+# 
+# #Fill locations in dataset that belong to honduras
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(hndbox[1,2]) & cropset_at_full$Long[p]<=-(hndbox[1,1]) & cropset_at_full$Lat.y[p]>=(hndbox[2,1]) & cropset_at_full$Lat.y[p]<=(hndbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Honduras"}
+#   
+# }
+# 
+# hti<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_HTI_shp", layer = "gadm36_HTI_1")
+# 
+# htibox<-hti@bbox
+# 
+# #Fill locations in dataset that belong to Haiti
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(htibox[1,2]) & cropset_at_full$Long[p]<=-(htibox[1,1]) & cropset_at_full$Lat.y[p]>=(htibox[2,1]) & cropset_at_full$Lat.y[p]<=(htibox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Haiti"}
+#   
+#   
+#  
+# }
+# 
+# #Extra Help Filling cells:
+# 
+# cropset_at_full$`Country Name`[3058877:3059301]<-"Haiti"
+# 
+# 
+# 
+# 
+# 
+# kna<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_KNA_shp", layer = "gadm36_KNA_1")
+# 
+# knabox<-kna@bbox
+# 
+# #Fill locations in dataset that belong to SKN
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(knabox[1,2]) & cropset_at_full$Long[p]<=-(knabox[1,1]) & cropset_at_full$Lat.y[p]>=(knabox[2,1]) & cropset_at_full$Lat.y[p]<=(knabox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Saint Kitts and Nevis"}
+#   
+# }
+# 
+# lca<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_LCA_shp", layer = "gadm36_LCA_1")
+# 
+# lcabox<-lca@bbox
+# 
+# #Fill locations in dataset that belong to St. Lucia
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(lcabox[1,2]) & cropset_at_full$Long[p]<=-(lcabox[1,1]) & cropset_at_full$Lat.y[p]>=(lcabox[2,1]) & cropset_at_full$Lat.y[p]<=(lcabox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Saint Lucia"}
+#   
+# }
+# 
+# maf<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MAF_shp", layer = "gadm36_MAF_0")
+# 
+# mafbox<-maf@bbox
+# 
+# #Fill locations in dataset that belong to Saint Martin
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(mafbox[1,2]) & cropset_at_full$Long[p]<=-(mafbox[1,1]) & cropset_at_full$Lat.y[p]>=(mafbox[2,1]) & cropset_at_full$Lat.y[p]<=(mafbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Saint Martin"}
+#   
+# }
+# 
+# cropset_at_full$`Country Name`[3067614:3068213]<-"Saint Martin"
+# 
+# 
+# mex<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MEX_shp", layer = "gadm36_MEX_1")
+# 
+# mexbox<-mex@bbox
+# 
+# #Fill locations in dataset that belong to Mexico
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(mexbox[1,2]) & cropset_at_full$Long[p]<=-(mexbox[1,1]) & cropset_at_full$Lat.y[p]>=(mexbox[2,1]) & cropset_at_full$Lat.y[p]<=(mexbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Mexico"}
+#   
+# }
+# 
+# mtq<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MTQ_shp", layer = "gadm36_MTQ_1")
+# 
+# mtqbox<-mtq@bbox
+# 
+# #Fill locations in dataset that belong to Martinique
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(mtqbox[1,2]) & cropset_at_full$Long[p]<=-(mtqbox[1,1]) & cropset_at_full$Lat.y[p]>=(mtqbox[2,1]) & cropset_at_full$Lat.y[p]<=(mtqbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Martinique"}
+# 
+#   
+# }
+# 
+# nic<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_NIC_shp", layer = "gadm36_NIC_1")
+# 
+# nicbox<-nic@bbox
+# 
+# #Fill locations in dataset that belong to Nicaragua
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(nicbox[1,2]) & cropset_at_full$Long[p]<=-(nicbox[1,1]) & cropset_at_full$Lat.y[p]>=(nicbox[2,1]) & cropset_at_full$Lat.y[p]<=(nicbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Nicaragua"}
+#   
+# }
+# 
+# pan<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PAN_shp", layer = "gadm36_PAN_1")
+# 
+# panbox<-pan@bbox
+# 
+# #Fill locations in dataset that belong to Panama
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(panbox[1,2]) & cropset_at_full$Long[p]<=-(panbox[1,1]) & cropset_at_full$Lat.y[p]>=(panbox[2,1]) & cropset_at_full$Lat.y[p]<=(panbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Panama"}
+#   
+#   
+# }
+# 
+# pri<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PRI_shp", layer = "gadm36_PRI_1")
+# 
+# pribox<-pri@bbox
+# 
+# #Fill locations in dataset that belong to Puerto Rico
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(pribox[1,2]) & cropset_at_full$Long[p]<=-(pribox[1,1]) & cropset_at_full$Lat.y[p]>=(pribox[2,1]) & cropset_at_full$Lat.y[p]<=(pribox[2,2]))
+#     
 #   {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
 #   
-# }
-
-
-
-#Shape file Jamaica
-
-jam<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_JAM_shp", layer = "gadm36_JAM_1")
-
-jmbox<-jam@bbox
-
-#Fill locations in dataset that belong to  "Jamaica"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(jmbox[1,2]) & cropset_at_full$Long[p]<=-(jmbox[1,1]) & cropset_at_full$Lat.y[p]>=(jmbox[2,1]) & cropset_at_full$Lat.y[p]<=(jmbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<- "Jamaica"
-  }
-  
-}
-
-
-#Shapefile for Aruba
-
-aruba<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_ABW_shp", layer = "gadm36_ABW_0")
-
-abwbox<-aruba@bbox
-
-#Fill locations in dataset that belong to "Aruba"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(abwbox[1,2]) & cropset_at_full$Long[p]<=-(abwbox[1,1]) & cropset_at_full$Lat.y[p]>=(abwbox[2,1]) & cropset_at_full$Lat.y[p]<=(abwbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Aruba"}
-  
-}
-
-
-#Shapefile for Anguilla
-
-anguilla<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_AIA_shp", layer = "gadm36_AIA_0")
-
-angbox<-anguilla@bbox
-
-#Fill locations in dataset that belong to  "Anguilla"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(angbox[1,2]) & cropset_at_full$Long[p]<=-(angbox[1,1]) & cropset_at_full$Lat.y[p]>=(angbox[2,1]) & cropset_at_full$Lat.y[p]<=(angbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Aguilla"}
-  
-}
-
-
-#Shapefile for A&B
-
-AB<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_ATG_shp", layer = "gadm36_ATG_1")
-
-ABbox<-AB@bbox
-
-#Fill locations in dataset that belong to "Antigua and Barbuda"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(ABbox[1,2]) & cropset_at_full$Long[p]<=-(ABbox[1,1]) & cropset_at_full$Lat.y[p]>=(ABbox[2,1]) & cropset_at_full$Lat.y[p]<=(ABbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Antigua and Barbuda"}
-  
-}
-
-
-
-
-bhs<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_BHS_shp", layer = "gadm36_BHS_1")
-
-bhsbox<-bhs@bbox
-
-#Fill locations in dataset that belong to Puerto Rico with the name "Bahamas"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(bhsbox[1,2]) & cropset_at_full$Long[p]<=-(bhsbox[1,1]) & cropset_at_full$Lat.y[p]>=(bhsbox[2,1]) & cropset_at_full$Lat.y[p]<=(bhsbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Bahamas"}
-  
-}
-
-
-blz<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_BLZ_shp", layer = "gadm36_BLZ_1")
-
-blzbox<-blz@bbox
-
-#Fill locations in dataset that belong to Puerto Rico with the name "Belize"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(blzbox[1,2]) & cropset_at_full$Long[p]<=-(blzbox[1,1]) & cropset_at_full$Lat.y[p]>=(blzbox[2,1]) & cropset_at_full$Lat.y[p]<=(blzbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Belize"}
-  
-}
-
-
-brb<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_BRB_shp", layer = "gadm36_BRB_1")
-
-brbbox<-brb@bbox
-
-#Fill locations in dataset that belong to Puerto Rico with the name "Barbados"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(brbbox[1,2]) & cropset_at_full$Long[p]<=-(brbbox[1,1]) & cropset_at_full$Lat.y[p]>=(brbbox[2,1]) & cropset_at_full$Lat.y[p]<=(brbbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Barbados"}
-  
-}
-
-
-col<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_COL_shp", layer = "gadm36_COL_1")
-
-colbox<-col@bbox
-
-#Fill locations in dataset that belong to "Columbia"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(colbox[1,2]) & cropset_at_full$Long[p]<=-(colbox[1,1]) & cropset_at_full$Lat.y[p]>=(colbox[2,1]) & cropset_at_full$Lat.y[p]<=(colbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Columbia"}
-  
-}
-
-
-cri<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CRI_shp", layer = "gadm36_CRI_1")
-
-cribox<-cri@bbox
-
-#Fill locations in dataset that belong to "Costa Rica"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(cribox[1,2]) & cropset_at_full$Long[p]<=-(cribox[1,1]) & cropset_at_full$Lat.y[p]>=(cribox[2,1]) & cropset_at_full$Lat.y[p]<=(cribox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Costa Rica"}
-  
-}
-
-
-cub<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CUB_shp", layer = "gadm36_CUB_1")
-
-cubbox<-cub@bbox
-
-#Fill locations in dataset that belong to "Cuba"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(cubbox[1,2]) & cropset_at_full$Long[p]<=-(cubbox[1,1]) & cropset_at_full$Lat.y[p]>=(cubbox[2,1]) & cropset_at_full$Lat.y[p]<=(cubbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Cuba"}
-  
-}
-
-
-cur<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CUW_shp", layer = "gadm36_CUW_0")
-
-curbox<-cur@bbox
-
-#Fill locations in dataset that belong to "Curacao"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(curbox[1,2]) & cropset_at_full$Long[p]<=-(curbox[1,1]) & cropset_at_full$Lat.y[p]>=(curbox[2,1]) & cropset_at_full$Lat.y[p]<=(curbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Curacao"}
-  
-}
-
-cym<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_CYM_shp", layer = "gadm36_CYM_1")
-
-cymbox<-cym@bbox
-
-#Fill locations in dataset that belong to "Cayman"
-for(p in 1: nrow(cropset_at_full)){
-  
-  
-  if(cropset_at_full$Long[p]>=-(cymbox[1,2]) & cropset_at_full$Long[p]<=-(cymbox[1,1]) & cropset_at_full$Lat.y[p]>=(cymbox[2,1]) & cropset_at_full$Lat.y[p]<=(cymbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Cayman"}
-  
-  
-  
-}
-
-
-#Need  extra steps to fully identify cayman: Fill cells 1945666:1946001
-cropset_at_full$`Country Name`[1945666:1946001]<-"Cayman"
-
-
-
-
-dma<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_DMA_shp", layer = "gadm36_DMA_1")
-
-dmabox<-dma@bbox
-
-#Fill locations in dataset that belong to  "Dominica"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(dmabox[1,2]) & cropset_at_full$Long[p]<=-(dmabox[1,1]) & cropset_at_full$Lat.y[p]>=(dmabox[2,1]) & cropset_at_full$Lat.y[p]<=(dmabox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Dominica"}
-  
-}
-
-dom<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_DOM_shp", layer = "gadm36_DOM_1")
-
-dombox<-dom@bbox
-
-#Fill locations in dataset that belong to  "Dom Rep."
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(dombox[1,2]) & cropset_at_full$Long[p]<=-(dombox[1,1]) & cropset_at_full$Lat.y[p]>=(dombox[2,1]) & cropset_at_full$Lat.y[p]<=(dombox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Dominican Republic"}
-  
-}
-
-
-glp<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GLP_shp", layer = "gadm36_GLP_1")
-
-glpbox<-glp@bbox
-
-#Fill locations in dataset that belong to  "Guadaloupe"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(glpbox[1,2]) & cropset_at_full$Long[p]<=-(glpbox[1,1]) & cropset_at_full$Lat.y[p]>=(glpbox[2,1]) & cropset_at_full$Lat.y[p]<=(glpbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Guadeloupe"}
-  
-}
-
-grd<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GRD_shp", layer = "gadm36_GRD_1")
-
-grdbox<-grd@bbox
-
-#Fill locations in dataset that belong to  "Grenada"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(grdbox[1,2]) & cropset_at_full$Long[p]<=-(grdbox[1,1]) & cropset_at_full$Lat.y[p]>=(grdbox[2,1]) & cropset_at_full$Lat.y[p]<=(grdbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Grenada"}
-  
-}
-
-gtm<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GTM_shp", layer = "gadm36_GTM_1")
-
-gtmbox<-gtm@bbox
-
-#Fill locations in dataset that belong to  "Guatemala"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(gtmbox[1,2]) & cropset_at_full$Long[p]<=-(gtmbox[1,1]) & cropset_at_full$Lat.y[p]>=(gtmbox[2,1]) & cropset_at_full$Lat.y[p]<=(gtmbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Guatemala"}
-  
-}
-
-guy<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_GUY_shp", layer = "gadm36_GUY_1")
-
-guybox<-guy@bbox
-
-#Fill locations in dataset that belong to "Guyana"
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(guybox[1,2]) & cropset_at_full$Long[p]<=-(guybox[1,1]) & cropset_at_full$Lat.y[p]>=(guybox[2,1]) & cropset_at_full$Lat.y[p]<=(guybox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Guyana"}
-  
-}
-
-hnd<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_HND_shp", layer = "gadm36_HND_1")
-
-hndbox<-hnd@bbox
-
-#Fill locations in dataset that belong to honduras
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(hndbox[1,2]) & cropset_at_full$Long[p]<=-(hndbox[1,1]) & cropset_at_full$Lat.y[p]>=(hndbox[2,1]) & cropset_at_full$Lat.y[p]<=(hndbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Honduras"}
-  
-}
-
-hti<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_HTI_shp", layer = "gadm36_HTI_1")
-
-htibox<-hti@bbox
-
-#Fill locations in dataset that belong to Haiti
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(htibox[1,2]) & cropset_at_full$Long[p]<=-(htibox[1,1]) & cropset_at_full$Lat.y[p]>=(htibox[2,1]) & cropset_at_full$Lat.y[p]<=(htibox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Haiti"}
-  
-  
-  
-}
-
-#Extra Help Filling cells:
-
-cropset_at_full$`Country Name`[3058877:3059301]<-"Haiti"
-
-
-
-
-
-kna<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_KNA_shp", layer = "gadm36_KNA_1")
-
-knabox<-kna@bbox
-
-#Fill locations in dataset that belong to SKN
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(knabox[1,2]) & cropset_at_full$Long[p]<=-(knabox[1,1]) & cropset_at_full$Lat.y[p]>=(knabox[2,1]) & cropset_at_full$Lat.y[p]<=(knabox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Saint Kitts and Nevis"}
-  
-}
-
-lca<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_LCA_shp", layer = "gadm36_LCA_1")
-
-lcabox<-lca@bbox
-
-#Fill locations in dataset that belong to St. Lucia
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(lcabox[1,2]) & cropset_at_full$Long[p]<=-(lcabox[1,1]) & cropset_at_full$Lat.y[p]>=(lcabox[2,1]) & cropset_at_full$Lat.y[p]<=(lcabox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Saint Lucia"}
-  
-}
-
-maf<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MAF_shp", layer = "gadm36_MAF_0")
-
-mafbox<-maf@bbox
-
-#Fill locations in dataset that belong to Saint Martin
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(mafbox[1,2]) & cropset_at_full$Long[p]<=-(mafbox[1,1]) & cropset_at_full$Lat.y[p]>=(mafbox[2,1]) & cropset_at_full$Lat.y[p]<=(mafbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Saint Martin"}
-  
-}
-
-cropset_at_full$`Country Name`[3067614:3068213]<-"Saint Martin"
-
-
-mex<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MEX_shp", layer = "gadm36_MEX_1")
-
-mexbox<-mex@bbox
-
-#Fill locations in dataset that belong to Mexico
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(mexbox[1,2]) & cropset_at_full$Long[p]<=-(mexbox[1,1]) & cropset_at_full$Lat.y[p]>=(mexbox[2,1]) & cropset_at_full$Lat.y[p]<=(mexbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Mexico"}
-  
-}
-
-mtq<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_MTQ_shp", layer = "gadm36_MTQ_1")
-
-mtqbox<-mtq@bbox
-
-#Fill locations in dataset that belong to Martinique
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(mtqbox[1,2]) & cropset_at_full$Long[p]<=-(mtqbox[1,1]) & cropset_at_full$Lat.y[p]>=(mtqbox[2,1]) & cropset_at_full$Lat.y[p]<=(mtqbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Martinique"}
-  
-  
-}
-
-nic<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_NIC_shp", layer = "gadm36_NIC_1")
-
-nicbox<-nic@bbox
-
-#Fill locations in dataset that belong to Nicaragua
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(nicbox[1,2]) & cropset_at_full$Long[p]<=-(nicbox[1,1]) & cropset_at_full$Lat.y[p]>=(nicbox[2,1]) & cropset_at_full$Lat.y[p]<=(nicbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Nicaragua"}
-  
-  
-}
-
-pan<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PAN_shp", layer = "gadm36_PAN_1")
-
-panbox<-pan@bbox
-
-#Fill locations in dataset that belong to Panama
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(panbox[1,2]) & cropset_at_full$Long[p]<=-(panbox[1,1]) & cropset_at_full$Lat.y[p]>=(panbox[2,1]) & cropset_at_full$Lat.y[p]<=(panbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Panama"}
-  
-  
-}
-
-pri<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_PRI_shp", layer = "gadm36_PRI_1")
-
-pribox<-pri@bbox
-
-#Fill locations in dataset that belong to Puerto Rico
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(pribox[1,2]) & cropset_at_full$Long[p]<=-(pribox[1,1]) & cropset_at_full$Lat.y[p]>=(pribox[2,1]) & cropset_at_full$Lat.y[p]<=(pribox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Puerto Rico"}
-  
-  
-  
-}
-
-#Extra Help Needed 
-
-
-cropset_at_full$`Country Name`[2658418:2659166]<-"Puerto Rico"
-
-
-
-slv<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_SLV_shp", layer = "gadm36_SLV_1")
-
-slvbox<-slv@bbox
-
-#Fill locations in dataset that belong to El Salvadore
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(slvbox[1,2]) & cropset_at_full$Long[p]<=-(slvbox[1,1]) & cropset_at_full$Lat.y[p]>=(slvbox[2,1]) & cropset_at_full$Lat.y[p]<=(slvbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"El Salvador"}
-  
-  
-}
-
-tca<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_TCA_shp", layer = "gadm36_TCA_1")
-
-tcabox<-tca@bbox
-
-#Fill locations in dataset that belong to Turks and Caicos Islands
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(tcabox[1,2]) & cropset_at_full$Long[p]<=-(tcabox[1,1]) & cropset_at_full$Lat.y[p]>=(tcabox[2,1]) & cropset_at_full$Lat.y[p]<=(tcabox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Turks and Caicos Islands"}
-  
-  
-}
-
-tto<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_TTO_shp", layer = "gadm36_TTO_1")
-
-ttobox<-tto@bbox
-
-#Fill locations in dataset that belong to Trinidad and Tobago
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(ttobox[1,2]) & cropset_at_full$Long[p]<=-(ttobox[1,1]) & cropset_at_full$Lat.y[p]>=(ttobox[2,1]) & cropset_at_full$Lat.y[p]<=(ttobox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Trinidad and Tobago"}
-  
-  
-}
-
-vct<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VCT_shp", layer = "gadm36_VCT_1")
-
-vctbox<-vct@bbox
-
-#Fill locations in dataset that belong to Saint Vincent and the Grenadines
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(vctbox[1,2]) & cropset_at_full$Long[p]<=-(vctbox[1,1]) & cropset_at_full$Lat.y[p]>=(vctbox[2,1]) & cropset_at_full$Lat.y[p]<=(vctbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"Saint Vincent and the Grenadines"}
-  
-  
-}
-
-#########################################################################################################################################################
-#Venezuela's marine borders extend as far as Puerto Rico and hence was overriding the countries that lie between these two countries. As such this section 
-#of the algorithm had to be removed in order to get the names accurately.
-##########################################################################################################################################################
-
-# ven<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VEN_shp", layer = "gadm36_VEN_2")
+#   
+#  
+#   }
 # 
-# venbox<-ven@bbox
+# #Extra Help Needed 
 # 
-# #Fill locations in dataset that belong to Venezuela
+# 
+# cropset_at_full$`Country Name`[2658418:2659166]<-"Puerto Rico"
+# 
+# 
+# 
+# slv<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_SLV_shp", layer = "gadm36_SLV_1")
+# 
+# slvbox<-slv@bbox
+# 
+# #Fill locations in dataset that belong to El Salvadore
 # for(p in 1: nrow(cropset_at_full)){
 #   
-#   if(cropset_at_full$Long[p]>=-(venbox[1,2]) & cropset_at_full$Long[p]<=-(venbox[1,1]) & cropset_at_full$Lat.y[p]>=(venbox[2,1]) & cropset_at_full$Lat.y[p]<=(venbox[2,2]))
+#   if(cropset_at_full$Long[p]>=-(slvbox[1,2]) & cropset_at_full$Long[p]<=-(slvbox[1,1]) & cropset_at_full$Lat.y[p]>=(slvbox[2,1]) & cropset_at_full$Lat.y[p]<=(slvbox[2,2]))
 #     
-#   {cropset_at_full$`Country Name`[p]<-"Venezuela"}
+#   {cropset_at_full$`Country Name`[p]<-"El Salvador"}
 #   
 #   
 # }
 # 
-# #Venezuela' smarine borders extend as far as Puerto Rico so we have to leave it out of the code since it overrides the countries between these two countries.
+# tca<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_TCA_shp", layer = "gadm36_TCA_1")
 # 
-#  ven1<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\capa-de-venezuela\\Venezuela Esequibo", layer= "Limites_Internacionales_Venezuela")
+# tcabox<-tca@bbox
 # 
-
-vgb<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VGB_shp", layer = "gadm36_VGB_1")
-
-vgbbox<-vgb@bbox
-
-#Fill locations in dataset that belong to British Virgin Islands
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(vgbbox[1,2]) & cropset_at_full$Long[p]<=-(vgbbox[1,1]) & cropset_at_full$Lat.y[p]>=(vgbbox[2,1]) & cropset_at_full$Lat.y[p]<=(vgbbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"British Virgin Islands"}
-  
-  
-}
-
-vir<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VIR_shp", layer = "gadm36_VIR_1")
-
-virbox<-vir@bbox
-
-#Fill locations in dataset that belong to United States Virgin Islands
-for(p in 1: nrow(cropset_at_full)){
-  
-  if(cropset_at_full$Long[p]>=-(virbox[1,2]) & cropset_at_full$Long[p]<=-(virbox[1,1]) & cropset_at_full$Lat.y[p]>=(virbox[2,1]) & cropset_at_full$Lat.y[p]<=(virbox[2,2]))
-    
-  {cropset_at_full$`Country Name`[p]<-"United States Virgin Islands"}
-  
-  
-}
+# #Fill locations in dataset that belong to Turks and Caicos Islands
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(tcabox[1,2]) & cropset_at_full$Long[p]<=-(tcabox[1,1]) & cropset_at_full$Lat.y[p]>=(tcabox[2,1]) & cropset_at_full$Lat.y[p]<=(tcabox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Turks and Caicos Islands"}
+#   
+#   
+# }
+# 
+# tto<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_TTO_shp", layer = "gadm36_TTO_1")
+# 
+# ttobox<-tto@bbox
+# 
+# #Fill locations in dataset that belong to Trinidad and Tobago
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(ttobox[1,2]) & cropset_at_full$Long[p]<=-(ttobox[1,1]) & cropset_at_full$Lat.y[p]>=(ttobox[2,1]) & cropset_at_full$Lat.y[p]<=(ttobox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Trinidad and Tobago"}
+#   
+#   
+# }
+# 
+# vct<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VCT_shp", layer = "gadm36_VCT_1")
+# 
+# vctbox<-vct@bbox
+# 
+# #Fill locations in dataset that belong to Saint Vincent and the Grenadines
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(vctbox[1,2]) & cropset_at_full$Long[p]<=-(vctbox[1,1]) & cropset_at_full$Lat.y[p]>=(vctbox[2,1]) & cropset_at_full$Lat.y[p]<=(vctbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"Saint Vincent and the Grenadines"}
+#   
+#   
+# }
+# 
+# #########################################################################################################################################################
+# #Venezuela's marine borders extend as far as Puerto Rico and hence was overriding the countries that lie between these two countries. As such this section 
+# #of the algorithm had to be removed in order to get the names accurately.
+# ##########################################################################################################################################################
+# 
+# # ven<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VEN_shp", layer = "gadm36_VEN_2")
+# # 
+# # venbox<-ven@bbox
+# # 
+# # #Fill locations in dataset that belong to Venezuela
+# # for(p in 1: nrow(cropset_at_full)){
+# #   
+# #   if(cropset_at_full$Long[p]>=-(venbox[1,2]) & cropset_at_full$Long[p]<=-(venbox[1,1]) & cropset_at_full$Lat.y[p]>=(venbox[2,1]) & cropset_at_full$Lat.y[p]<=(venbox[2,2]))
+# #     
+# #   {cropset_at_full$`Country Name`[p]<-"Venezuela"}
+# #   
+# #   
+# # }
+# # 
+# # #Venezuela' smarine borders extend as far as Puerto Rico so we have to leave it out of the code since it overrides the countries between these two countries.
+# # 
+# #  ven1<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\capa-de-venezuela\\Venezuela Esequibo", layer= "Limites_Internacionales_Venezuela")
+# # 
+# 
+#  vgb<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VGB_shp", layer = "gadm36_VGB_1")
+# 
+#  vgbbox<-vgb@bbox
+# 
+#  #Fill locations in dataset that belong to British Virgin Islands
+#  for(p in 1: nrow(cropset_at_full)){
+# 
+#    if(cropset_at_full$Long[p]>=-(vgbbox[1,2]) & cropset_at_full$Long[p]<=-(vgbbox[1,1]) & cropset_at_full$Lat.y[p]>=(vgbbox[2,1]) & cropset_at_full$Lat.y[p]<=(vgbbox[2,2]))
+# 
+#    {cropset_at_full$`Country Name`[p]<-"British Virgin Islands"}
+# 
+# 
+# }
+# 
+# vir<-readOGR(dsn = "C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\Shape files\\gadm36_VIR_shp", layer = "gadm36_VIR_1")
+# 
+# virbox<-vir@bbox
+# 
+# #Fill locations in dataset that belong to United States Virgin Islands
+# for(p in 1: nrow(cropset_at_full)){
+#   
+#   if(cropset_at_full$Long[p]>=-(virbox[1,2]) & cropset_at_full$Long[p]<=-(virbox[1,1]) & cropset_at_full$Lat.y[p]>=(virbox[2,1]) & cropset_at_full$Lat.y[p]<=(virbox[2,2]))
+#     
+#   {cropset_at_full$`Country Name`[p]<-"United States Virgin Islands"}
+#   
+#   
+# }
 
 boxlist<-list(virbox, brbbox, colbox, ABbox, abwbox, bhsbox, blzbox, cribox, cubbox, curbox, cymbox, dmabox, glpbox, gtmbox, guybox, hndbox, htibox, jmbox, knabox, lcabox, mafbox, mexbox, mtqbox, nicbox, panbox, prbox, slvbox, tcabox, ttobox)
 
 
-#Countries where locations were not assigned- they were manually entered
+# #Countries where locations were not assigned- they were manually entered
+# 
+# cropset_at_full$`Country Name`[3107996:3108193]<-"Saint Barthelemy"
+# cropset_at_full$`Country Name`[3122237:3122632]<-"Saint Barthelemy"
+# cropset_at_full$`Country Name`[3151635:3151823]<-"St Croix"
+# cropset_at_full$`Country Name`[3303999:3318849]<-"Montserrat" #:3308720]<-"Montserrat"
+# cropset_at_full$`Country Name`[3746857:3746997]<-"Martinique"
+# cropset_at_full$`Country Name`[3338388:3371927]<-"Guadeloupe"
+# cropset_at_full$`Country Name`[3734213:3759981]<-"Martinique"
+# cropset_at_full$`Country Name`[4124593:4124690]<-"Saint Vincent and the Grenadines"
+# cropset_at_full$`Country Name`[4131243:4292136]<-"Saint Vincent and the Grenadines"
+# cropset_at_full$`Country Name`[4131339:4131610]<-"Barbados"
+# cropset_at_full$`Country Name`[4132000:4132030]<-"Honduras"
+# cropset_at_full$`Country Name`[4132031:4132479]<-"Honduras"
+# cropset_at_full$`Country Name`[4410773:4410818]<-"Venezuela"
+# cropset_at_full$`Country Name`[4448486:4448690]<-"Venezuela"
+# cropset_at_full$`Country Name`[4611625:4569958]<-"Venezuela"
+# cropset_at_full$`Country Name`[4431756:4569906]<-"Venezuela"
+# cropset_at_full$`Country Name`[4320298:4424477]<-"Venezuela"
 
-cropset_at_full$`Country Name`[3107996:3108193]<-"Saint Barthelemy"
-cropset_at_full$`Country Name`[3122237:3122632]<-"Saint Barthelemy"
-cropset_at_full$`Country Name`[3151635:3151823]<-"St Croix"
-cropset_at_full$`Country Name`[3303999:3318849]<-"Montserrat" #:3308720]<-"Montserrat"
-cropset_at_full$`Country Name`[3746857:3746997]<-"Martinique"
-cropset_at_full$`Country Name`[3338388:3371927]<-"Guadeloupe"
-cropset_at_full$`Country Name`[3734213:3759981]<-"Martinique"
-cropset_at_full$`Country Name`[4124593:4124690]<-"Saint Vincent and the Grenadines"
-cropset_at_full$`Country Name`[4131243:4292136]<-"Saint Vincent and the Grenadines"
-cropset_at_full$`Country Name`[4410773:4410818]<-"Venezuela"
-cropset_at_full$`Country Name`[4448486:4448690]<-"Venezuela"
-cropset_at_full$`Country Name`[4611625:4569958]<-"Venezuela"
-cropset_at_full$`Country Name`[4431756:4569906]<-"Venezuela"
-cropset_at_full$`Country Name`[4320298:4424477]<-"Venezuela"
+
+#This method of assigning names is more efficient than using the loop
+#Note that the shape files dont account for the rigidity in the shapes 
+#of the countries so for countries in places like central america 
+#close to borders the names may not be national correct.
+#
+#
+#
+#Must Assign Columbia before Aruba since the shape file will absorb Aruba due to proximity.
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Get names<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+cropset_at_full[(which(cropset_at_full$Long>=-(jmbox[1,2]) & cropset_at_full$Long<=-(jmbox[1,1]) & cropset_at_full$Lat.y>=(jmbox[2,1]) & cropset_at_full$Lat.y<=(jmbox[2,2]))),16]<-"Jamaica"
+cropset_at_full[(which(cropset_at_full$Long>=-(colbox[1,2]) & cropset_at_full$Long<=-(colbox[1,1]) & cropset_at_full$Lat.y>=(colbox[2,1]) & cropset_at_full$Lat.y<=(colbox[2,2]))),16]<-"Columbia"
+cropset_at_full[(which(cropset_at_full$Long>=-(abwbox[1,2]) & cropset_at_full$Long<=-(abwbox[1,1]) & cropset_at_full$Lat.y>=(abwbox[2,1]) & cropset_at_full$Lat.y<=(abwbox[2,2]))),16]<-"Aruba"
+cropset_at_full[(which(cropset_at_full$Long>=-(angbox[1,2]) & cropset_at_full$Long<=-(angbox[1,1]) & cropset_at_full$Lat.y>=(angbox[2,1]) & cropset_at_full$Lat.y<=(angbox[2,2]))),16]<-"Anguilla"
+cropset_at_full[(which(cropset_at_full$Long>=-(ABbox[1,2]) & cropset_at_full$Long<=-(ABbox[1,1]) & cropset_at_full$Lat.y>=(ABbox[2,1]) & cropset_at_full$Lat.y<=(ABbox[2,2]))),16]<-"Antigua and Barbuda"
+cropset_at_full[(which(cropset_at_full$Long>=-(bhsbox[1,2]) & cropset_at_full$Long<=-(bhsbox[1,1]) & cropset_at_full$Lat.y>=(bhsbox[2,1]) & cropset_at_full$Lat.y<=(bhsbox[2,2]))),16]<-"Bahamas"
+cropset_at_full[(which(cropset_at_full$Long>=-(blzbox[1,2]) & cropset_at_full$Long<=-(blzbox[1,1]) & cropset_at_full$Lat.y>=(blzbox[2,1]) & cropset_at_full$Lat.y<=(blzbox[2,2]))),16]<-"Belize"
+cropset_at_full[(which(cropset_at_full$Long>=-(brbbox[1,2]) & cropset_at_full$Long<=-(brbbox[1,1]) & cropset_at_full$Lat.y>=(brbbox[2,1]) & cropset_at_full$Lat.y<=(brbbox[2,2]))),16]<-"Barbados"
+cropset_at_full[(which(cropset_at_full$Long>=-(cribox[1,2]) & cropset_at_full$Long<=-(cribox[1,1]) & cropset_at_full$Lat.y>=(cribox[2,1]) & cropset_at_full$Lat.y<=(cribox[2,2]))),16]<-"Costa Rica"
+cropset_at_full[(which(cropset_at_full$Long>=-(cubbox[1,2]) & cropset_at_full$Long<=-(cubbox[1,1]) & cropset_at_full$Lat.y>=(cubbox[2,1]) & cropset_at_full$Lat.y<=(cubbox[2,2]))),16]<-"Cuba"
+cropset_at_full[(which(cropset_at_full$Long>=-(curbox[1,2]) & cropset_at_full$Long<=-(curbox[1,1]) & cropset_at_full$Lat.y>=(curbox[2,1]) & cropset_at_full$Lat.y<=(curbox[2,2]))),16]<-"Curacao"
+cropset_at_full[(which(cropset_at_full$Long>=-(cymbox[1,2]) & cropset_at_full$Long<=-(cymbox[1,1]) & cropset_at_full$Lat.y>=(cymbox[2,1]) & cropset_at_full$Lat.y<=(cymbox[2,2]))),16]<-"Cayman"
+cropset_at_full[(which(cropset_at_full$Long>=-(dmabox[1,2]) & cropset_at_full$Long<=-(dmabox[1,1]) & cropset_at_full$Lat.y>=(dmabox[2,1]) & cropset_at_full$Lat.y<=(dmabox[2,2]))),16]<-"Dominica"
+cropset_at_full[(which(cropset_at_full$Long>=-(dombox[1,2]) & cropset_at_full$Long<=-(dombox[1,1]) & cropset_at_full$Lat.y>=(dombox[2,1]) & cropset_at_full$Lat.y<=(dombox[2,2]))),16]<-"Dominican Republic"
+cropset_at_full[(which(cropset_at_full$Long>=-(glpbox[1,2]) & cropset_at_full$Long<=-(glpbox[1,1]) & cropset_at_full$Lat.y>=(glpbox[2,1]) & cropset_at_full$Lat.y<=(glpbox[2,2]))),16]<-"Guadeloupe"
+cropset_at_full[(which(cropset_at_full$Long>=-(grdbox[1,2]) & cropset_at_full$Long<=-(grdbox[1,1]) & cropset_at_full$Lat.y>=(grdbox[2,1]) & cropset_at_full$Lat.y<=(grdbox[2,2]))),16]<-"Grenada"
+cropset_at_full[(which(cropset_at_full$Long>=-(gtmbox[1,2]) & cropset_at_full$Long<=-(gtmbox[1,1]) & cropset_at_full$Lat.y>=(gtmbox[2,1]) & cropset_at_full$Lat.y<=(gtmbox[2,2]))),16]<-"Guatemala"
+cropset_at_full[(which(cropset_at_full$Long>=-(guybox[1,2]) & cropset_at_full$Long<=-(guybox[1,1]) & cropset_at_full$Lat.y>=(guybox[2,1]) & cropset_at_full$Lat.y<=(guybox[2,2]))),16]<-"Guyana"
+cropset_at_full[(which(cropset_at_full$Long>=-(hndbox[1,2]) & cropset_at_full$Long<=-(hndbox[1,1]) & cropset_at_full$Lat.y>=(hndbox[2,1]) & cropset_at_full$Lat.y<=(hndbox[2,2]))),16]<-"Honduras"
+cropset_at_full[(which(cropset_at_full$Long>=-(htibox[1,2]) & cropset_at_full$Long<=-(htibox[1,1]) & cropset_at_full$Lat.y>=(htibox[2,1]) & cropset_at_full$Lat.y<=(htibox[2,2]))),16]<-"Haiti"
+cropset_at_full[(which(cropset_at_full$Long>=-(knabox[1,2]) & cropset_at_full$Long<=-(knabox[1,1]) & cropset_at_full$Lat.y>=(knabox[2,1]) & cropset_at_full$Lat.y<=(knabox[2,2]))),16]<-"Saint Kitts and Nevis"
+cropset_at_full[(which(cropset_at_full$Long>=-(lcabox[1,2]) & cropset_at_full$Long<=-(lcabox[1,1]) & cropset_at_full$Lat.y>=(lcabox[2,1]) & cropset_at_full$Lat.y<=(lcabox[2,2]))),16]<-"Saint Lucia"
+cropset_at_full[(which(cropset_at_full$Long>=-(mafbox[1,2]) & cropset_at_full$Long<=-(mafbox[1,1]) & cropset_at_full$Lat.y>=(mafbox[2,1]) & cropset_at_full$Lat.y<=(mafbox[2,2]))),16]<-"Saint Martin"
+cropset_at_full[(which(cropset_at_full$Long>=-(mexbox[1,2]) & cropset_at_full$Long<=-(mexbox[1,1]) & cropset_at_full$Lat.y>= (mexbox[2,1]) & cropset_at_full$Lat.y<= (mexbox[2,2]))),16]<-"Mexico"
+cropset_at_full[(which(cropset_at_full$Long>=-(mtqbox[1,2]) & cropset_at_full$Long<=-(mtqbox[1,1]) & cropset_at_full$Lat.y>=(mtqbox[2,1]) & cropset_at_full$Lat.y<=(mtqbox[2,2]))),16]<-"Martinique"
+cropset_at_full[(which(cropset_at_full$Long>=-(nicbox[1,2]) & cropset_at_full$Long<=-(nicbox[1,1]) & cropset_at_full$Lat.y>=(nicbox[2,1]) & cropset_at_full$Lat.y<=(nicbox[2,2]))),16]<-"Nicaragua"
+cropset_at_full[(which(cropset_at_full$Long>=-(panbox[1,2]) & cropset_at_full$Long<=-(panbox[1,1]) & cropset_at_full$Lat.y>=(panbox[2,1]) & cropset_at_full$Lat.y<=(panbox[2,2]))),16]<-"Panama"
+cropset_at_full[(which(cropset_at_full$Long>=-(pribox[1,2]) & cropset_at_full$Long<=-(pribox[1,1]) & cropset_at_full$Lat.y>=(pribox[2,1]) & cropset_at_full$Lat.y<=(pribox[2,2]))),16]<-"Puerto Rico"
+cropset_at_full[(which(cropset_at_full$Long>=-(slvbox[1,2]) & cropset_at_full$Long<=-(slvbox[1,1]) & cropset_at_full$Lat.y>=(slvbox[2,1]) & cropset_at_full$Lat.y<=(slvbox[2,2]))),16]<-"El Salvador"
+cropset_at_full[(which(cropset_at_full$Long>=-(tcabox[1,2]) & cropset_at_full$Long<=-(tcabox[1,1]) & cropset_at_full$Lat.y>=(tcabox[2,1]) & cropset_at_full$Lat.y<=(tcabox[2,2]))),16]<-"Turks and Caicos Islands"    
+cropset_at_full[(which(cropset_at_full$Long>=-(ttobox[1,2]) & cropset_at_full$Long<=-(ttobox[1,1]) & cropset_at_full$Lat.y>=(ttobox[2,1]) & cropset_at_full$Lat.y<=(ttobox[2,2]))),16]<- "Trinidad and Tobago"  
+cropset_at_full[(which(cropset_at_full$Long>=-(vctbox[1,2]) & cropset_at_full$Long<=-(vctbox[1,1]) & cropset_at_full$Lat.y>=(vctbox[2,1]) & cropset_at_full$Lat.y<=(vctbox[2,2]))),16]<- "Saint Vincent and the Grenadines"
+cropset_at_full[(which(cropset_at_full$Long>=-(vgbbox[1,2]) & cropset_at_full$Long<=-(vgbbox[1,1]) & cropset_at_full$Lat.y>=(vgbbox[2,1]) & cropset_at_full$Lat.y<=(vgbbox[2,2]))),16]<-"British Virgin Islands"  
+cropset_at_full[(which(cropset_at_full$Long>=-(virbox[1,2]) & cropset_at_full$Long<=-(virbox[1,1]) & cropset_at_full$Lat.y>=(virbox[2,1]) & cropset_at_full$Lat.y<=(virbox[2,2]))),16]<-"United States Virgin Islands"
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>_____________________________<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 
 
 
@@ -2392,6 +2444,13 @@ sum(length(which(is.na(cropset_at_full$`Country Name`))))
 
 #After filling, the total amount of NA locations fell from 228050 to 0
 
+write.table(cropset_at_full, file="cropset_at_full.csv",sep=",",row.names=F)
+
+
+
+
+
+
 
 ########################################Collect data by country######################################################
 mexico<-data.table()
@@ -2399,15 +2458,13 @@ mexico<-subset(cropset_at_full,cropset_at_full$`Country Name`== 'Mexico')
 mexico_list<-split(mexico, mexico$Key, drop = TRUE)
 write.table(mexico, file="mexico.csv",sep=",",row.names=F)
 
-
-
 puerto<-data.table()
 puerto<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Puerto Rico')
 puerto_list<-split(puerto, puerto$Key , drop = TRUE)
 write.table(puerto, file="puerto.csv",sep=",",row.names=F)
 
 bahamas<-data.table()
-bahamas<-subset(cropset_at_full,cropset_at_full$`Country Name`=='The Bahamas')
+bahamas<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Bahamas')
 bahamas_list<-split(bahamas, bahamas$Key, drop = TRUE)
 write.table(bahamas, file="bahamas.csv",sep=",",row.names=F)
 
@@ -2417,7 +2474,7 @@ haiti_list<-split(haiti,haiti$Key, drop = TRUE)
 write.table(haiti, file="haiti.csv",sep=",",row.names=F)
 
 cayman<-data.table()
-cayman<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Cayman Islands')
+cayman<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Cayman')
 cayman_list<-split(cayman, cayman$Key, drop = TRUE)
 write.table(cayman, file="cayman.csv",sep=",",row.names=F)
 
@@ -2548,7 +2605,7 @@ barbados_list<-split(barbados, barbados$Key, drop = TRUE)
 write.table(barbados, file="barbados.csv",sep=",",row.names=F)
 
 columbia<-data.table()
-columbia<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Colombia')
+columbia<-subset(cropset_at_full,cropset_at_full$`Country Name`=='Columbia')
 columbia_list<-split(columbia, columbia$Key, drop = TRUE)
 write.table(columbia, file="columbia.csv",sep=",",row.names=F)
 
@@ -2567,7 +2624,114 @@ write.table(panama, file="panama.csv",sep=",",row.names=F)
 #########################################
 
 
+###########################################################Formulate data in Stormwin model format########################################################
+#storm
+stwind_jam<-jamaica[9:12]
+stwind_jam$lat<-jamaica[6]
+stwind_jam$long<-jamaica[7]
+stwind_jam$wind<-jamaica[8]
 
+#Location
+stloc_jam<-jamaica[1]
+stloc_jam$lat<-jamaica[15]
+stloc_jam$long<-jamaica[14]
+#Correct the minus sign in the longitude
+stloc_jam[3]<--(stloc_jam[3])
+
+
+#Correct day
+for(f in 1: nrow(stwind_jam))
+{
+  if(nchar(stwind_jam$day[f])<2){
+    stwind_jam$day[f]<-paste0("0",stwind_jam$day[f])
+  }
+  #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
+}
+
+
+#Correct month
+for(f in 1: nrow(stwind_jam))
+{
+  if(nchar(stwind_jam$month[f])<2){
+    stwind_jam$month[f]<-paste0("0",stwind_jam$month[f])
+  }
+  #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
+}
+
+#Correct time
+
+stwind_jam$time<-round(stwind_jam$time, 0)
+
+for(f in 1: nrow(stwind_jam))
+{
+  if(nchar(stwind_jam$time[f])<2){
+    stwind_jam$time[f]<-paste0("0",stwind_jam$time[f])
+  }
+  #else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
+}
+
+
+for(f in 1: nrow(stwind_jam))
+{
+  if(nchar(stwind_jam$time[f])<2){
+    stwind_jam$time[f]<-paste0("0",stwind_jam$time[f])
+  }
+  else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
+}
+
+
+
+
+
+stwind_jam$date<-paste0(stwind_jam$year, stwind_jam$month,stwind_jam$day, stwind_jam$time)
+stwind_jam[1:4]<-NULL
+#Reorder the dataframe
+stwind_jam<- stwind_jam[c(4,1,2,3)]
+#corecting date format for hurricanes
+stwind_jam$date<-as.character(stwind_jam$date)
+
+
+
+#rename columns because the package is strict on the names inputted
+colnames(stwind_jam)<-c("date","latitude","longitude","wind")
+colnames(stloc_jam)<-c("gridid","glat","glon")
+
+
+#convert the speed from kmph to knots
+stwind_jam$wind<-convert_wind_speed(stwind_jam$wind, old_metric = "kmph",
+                                    new_metric = "knots", round = NULL)
+
+
+
+#Get wind soeed estimates
+devtools::install_github("geanders/stormwindmodel", build_vignettes = TRUE)
+install.packages("stormwindmodel")
+library(stormwindmodel)
+
+#Testing using data provided by the package
+
+data("floyd_tracks")
+head(floyd_tracks)
+
+floyd_winds <- get_grid_winds(hurr_track = floyd_tracks, grid_df = county_points)
+#works just fine
+
+
+#will shorten my dataset so that I can test my data
+#my current concern is that I have the same location for multiple years in the sam data set.
+#Im not sure if the package will calculate only fot the relavant years
+
+try_wjam<-head(stwind_jam)
+try_ljam<-head(stloc_jam)
+
+
+wind_jam_try<-get_grid_winds(hurr_track =try_wjam, grid_df = try_ljam)
+#Giving an error so I need to check if the problem is due to the fact that I dont have all the locations separated by ID.
+#Il try using the original points obtained fromt the tif file without the separation on grounds of hurricane being 
+#500km or less from location of interes.
+
+
+###########################################################################################################################################################
 
 
 ######################################Using world map to plot hurricanes in the Caribbean######################
