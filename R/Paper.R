@@ -29,6 +29,9 @@ install.packages("‘HURDAT", dependencies = TRUE)
 #install.packages("C:/Users/goulb/Downloads/HURDAT_0.2.0.tar.gz", repos = NULL, type = "source")
 install.packages("stringr", dependencies = TRUE)
 install.packages("C:/Users/goulb/Downloads/weathermetrics_1.2.2.tar.gz", repos = NULL, type = "source")
+devtools::install_github("geanders/stormwindmodel", build_vignettes = TRUE)
+install.packages("stormwindmodel")
+
 
 library(spData)
 library(spdep)
@@ -57,6 +60,7 @@ library(readr)
 library(HURDAT)
 library(stringr)
 library(weathermetrics)
+library(stormwindmodel)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~LETS TRY ON OUR OWN NOW~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -2625,88 +2629,181 @@ write.table(panama, file="panama.csv",sep=",",row.names=F)
 
 
 ###########################################################Formulate data in Stormwin model format########################################################
-#storm
-stwind_jam<-jamaica[9:12]
-stwind_jam$lat<-jamaica[6]
-stwind_jam$long<-jamaica[7]
-stwind_jam$wind<-jamaica[8]
 
-#Location
-stloc_jam<-jamaica[1]
-stloc_jam$lat<-jamaica[15]
-stloc_jam$long<-jamaica[14]
-#Correct the minus sign in the longitude
-stloc_jam[3]<--(stloc_jam[3])
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Storm 1<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+#storm Jamaica
+# stwind_jam<-jamaica[9:12]
+# stwind_jam$lat<-jamaica[6]
+# stwind_jam$long<-jamaica[7]
+# stwind_jam$wind<-jamaica[8]
+
+
+#tracking<-merge(al,jamaica, By= "Key",all=T)
+unique(jamaica$Name)  #16 hurricanes
+h1j<-subset(atlantic_cat345_interpolated, atlantic_cat345_interpolated$Name=="ALLEN")
+h1j<-as.data.table(h1j)
 
 #Correct day
-for(f in 1: nrow(stwind_jam))
+for(f in 1: nrow(h1j))
 {
-  if(nchar(stwind_jam$day[f])<2){
-    stwind_jam$day[f]<-paste0("0",stwind_jam$day[f])
+  if(nchar(h1j$day[f])<2){
+    h1j$day[f]<-paste0("0",h1j$day[f])
   }
   #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
 }
 
 
 #Correct month
-for(f in 1: nrow(stwind_jam))
+for(f in 1: nrow(h1j))
 {
-  if(nchar(stwind_jam$month[f])<2){
-    stwind_jam$month[f]<-paste0("0",stwind_jam$month[f])
+  if(nchar(h1j$month[f])<2){
+    h1j$month[f]<-paste0("0",h1j$month[f])
   }
   #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
 }
 
 #Correct time
 
-stwind_jam$time<-round(stwind_jam$time, 0)
+h1j$time<-round(h1j$time, 0)
 
-for(f in 1: nrow(stwind_jam))
+for(f in 1: nrow(h1j))
 {
-  if(nchar(stwind_jam$time[f])<2){
-    stwind_jam$time[f]<-paste0("0",stwind_jam$time[f])
+  if(nchar(h1j$time[f])<2){
+    h1j$time[f]<-paste0("0",h1j$time[f])
   }
   #else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
 }
 
 
-for(f in 1: nrow(stwind_jam))
+for(f in 1: nrow(h1j))
 {
-  if(nchar(stwind_jam$time[f])<2){
-    stwind_jam$time[f]<-paste0("0",stwind_jam$time[f])
+  if(nchar(h1j[f])<2){
+    h1j$time[f]<-paste0("0",h1j$time[f])
   }
-  else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
+  else{h1j$time[f]<-paste0(h1j$time[f],"00")}
 }
 
 
 
-
-
-stwind_jam$date<-paste0(stwind_jam$year, stwind_jam$month,stwind_jam$day, stwind_jam$time)
-stwind_jam[1:4]<-NULL
+h1j$date<-paste0(h1j$year,h1j$month,h1j$day, h1j$time)
+h1j<-as.data.frame(h1j)
+h1j[1:4]<-NULL
+h1j[4:9]<-NULL
 #Reorder the dataframe
-stwind_jam<- stwind_jam[c(4,1,2,3)]
+h1j<-h1j[c(4,1,2,3)]
 #corecting date format for hurricanes
-stwind_jam$date<-as.character(stwind_jam$date)
+h1j$date<-as.character(h1j$date)
 
 
 
 #rename columns because the package is strict on the names inputted
-colnames(stwind_jam)<-c("date","latitude","longitude","wind")
-colnames(stloc_jam)<-c("gridid","glat","glon")
+colnames(h1j)<-c("date","latitude","longitude","wind")
+
 
 
 #convert the speed from kmph to knots
-stwind_jam$wind<-convert_wind_speed(stwind_jam$wind, old_metric = "kmph",
-                                    new_metric = "knots", round = NULL)
+h1j$wind<-convert_wind_speed(h1j$wind, old_metric = "kmph", new_metric = "knots", round = NULL)
+
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Storm 1<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Storm 2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#Jamaica
+
+unique(jamaica$Name)  #16 hurricanes
+h2j<-subset(atlantic_cat345_interpolated, atlantic_cat345_interpolated$Name=="GILBERT")
+h2j<-as.data.table(h2j)
+
+#Correct day
+for(f in 1: nrow(h2j))
+{
+  if(nchar(h2j$day[f])<2){
+    h2j$day[f]<-paste0("0",h2j$day[f])
+  }
+  #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
+}
+
+
+#Correct month
+for(f in 1: nrow(h2j))
+{
+  if(nchar(h2j$month[f])<2){
+    h2j$month[f]<-paste0("0",h2j$month[f])
+  }
+  #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
+}
+
+#Correct time
+
+h2j$time<-round(h2j$time, 0)
+
+for(f in 1: nrow(h2j))
+{
+  if(nchar(h2j$time[f])<2){
+    h2j$time[f]<-paste0("0",h2j$time[f])
+  }
+  #else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
+}
+
+
+for(f in 1: nrow(h2j))
+{
+  if(nchar(h2j[f])<2){
+    h2j$time[f]<-paste0("0",h2j$time[f])
+  }
+  else{h2j$time[f]<-paste0(h2j$time[f],"00")}
+}
 
 
 
-#Get wind soeed estimates
-devtools::install_github("geanders/stormwindmodel", build_vignettes = TRUE)
-install.packages("stormwindmodel")
-library(stormwindmodel)
+h2j$date<-paste0(h2j$year,h2j$month,h2j$day, h2j$time)
+h2j<-as.data.frame(h2j)
+h2j[1:4]<-NULL
+h2j[4:9]<-NULL
+#Reorder the dataframe
+h2j<-h2j[c(4,1,2,3)]
+#corecting date format for hurricanes
+h2j$date<-as.character(h2j$date)
+
+
+
+#rename columns because the package is strict on the names inputted
+colnames(h2j)<-c("date","latitude","longitude","wind")
+
+
+
+#convert the speed from kmph to knots
+h2j$wind<-convert_wind_speed(h2j$wind, old_metric = "kmph", new_metric = "knots", round = NULL)
+
+
+
+
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Storm 2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+
+
+
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Location<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Cen90_crop$location<-"NA"
+Cen90_crop[(which(Cen90_crop$Long>=-(jmbox[1,2]) & Cen90_crop$Long<=-(jmbox[1,1]) & Cen90_crop$Lat>=(jmbox[2,1]) & Cen90_crop$Lat<=(jmbox[2,2]))),5]<-"Jamaica"
+try_ljam<-subset(Cen90_crop, Cen90_crop$location=="Jamaica")
+
+
+# stloc_jam<-jamaica[1]
+# stloc_jam$lat<-jamaica[15]
+# stloc_jam$long<-jamaica[14]
+# #Correct the minus sign in the longitude
+# stloc_jam[3]<--(stloc_jam[3])
+# 
+
+
+
+
+#Get wind speed estimates
+
 
 #Testing using data provided by the package
 
@@ -2720,15 +2817,45 @@ floyd_winds <- get_grid_winds(hurr_track = floyd_tracks, grid_df = county_points
 #will shorten my dataset so that I can test my data
 #my current concern is that I have the same location for multiple years in the sam data set.
 #Im not sure if the package will calculate only fot the relavant years
+# 
+# try_wjam<-head(stwind_jam)
+# colnames(try_wjam)<-c("date","latitude","longitude","wind")
+# #This shortened dataset refusese to reame the columns so I have to transfer the columns ot another dataframe
+# 
+# test_tracks<-as.data.table(try_wjam$date)
+# colnames(test_tracks)<-c("date")
+# test_tracks$latitude<-try_wjam$latitude
+# test_tracks$longitude<-try_wjam$longitude
+# test_tracks$wind<-try_wjam$wind
 
-try_wjam<-head(stwind_jam)
-try_ljam<-head(stloc_jam)
 
 
-wind_jam_try<-get_grid_winds(hurr_track =try_wjam, grid_df = try_ljam)
+try_ljam[,1]<-NULL
+try_ljam[,4]<-NULL
+try_ljam<-as.data.frame(try_ljam)
+try_ljam<-try_ljam[c(3,2,1)]
+try_ljam$glon<--(try_ljam$glon)
+colnames(try_ljam)<-c("gridid","glat","glon")
+
+small_jam<-head(try_ljam)
+
+
+
+wind_jam_try<-get_grid_winds(hurr_track= test_tracks, grid_df = small_jam)
 #Giving an error so I need to check if the problem is due to the fact that I dont have all the locations separated by ID.
-#Il try using the original points obtained fromt the tif file without the separation on grounds of hurricane being 
+#Ill try using the original points obtained from the tif file without the separation on grounds of hurricane being 
 #500km or less from location of interes.
+
+
+#>>>>Using the original data from the tif file works. I will now run the code on the full set of locations for Jamaica
+#So using the original hurricane track data we are able to calclate the wind speed experienced by each locality in the dataset. 
+
+
+
+wind_jam1<-get_grid_winds(hurr_track= h1j, grid_df = try_ljam) #Hurricane 1 for Jamaica
+wind_jam2<-get_grid_winds(hurr_track= h2j, grid_df = try_ljam) #Hurricane 2 for Jamaica
+
+
 
 
 ###########################################################################################################################################################
@@ -2790,5 +2917,13 @@ lines(-hurr_interpolated$Long.W[1992:2028], hurr_interpolated$Lat.N[1992:2028], 
 #############################################
 #So this worked.
 ############################################
+
+
+
+
+
+
+
+
 
 
