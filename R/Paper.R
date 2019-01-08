@@ -6519,11 +6519,26 @@ load("speed_list_puerto.RData")
 
 
 ############INFORMATION ABOUT THE WIND SPEED CALCULATIONS###########
-
+                                #NAAO#
 
 #The maximum wind speed is measure in meters per second.
+
 #vmax_gust: Maximum 10-m 1-minute gust wind experienced at the grid point during the storm
+
+            #Gusts are a few seconds (3-5 s) wind peak. Typically in a hurricane environment, 
+            #the value of the maximum 3 second gust over a 1 minute period is on the order of 1.3 times
+            #(or 30% higher than) than the 1 min sustained wind.
+
+
+
 #vmax_sust: Maximum 10-m 1-minute sustained wind experienced at the grid point during the storm
+
+            #The maximum sustained wind mentioned in the advisories that NHC issues for tropical
+            #storms and hurricanes are the highest 1 min surface winds occurring within the circulation 
+            #of the system. These "surface" winds are those observed (or, more often, estimated) to occur
+            #at the standard meteorological height of 10 m (33 ft) in an unobstructed exposure (i.e., not blocked by buildings or trees).
+
+
 #gust_dur: Duration gust wind was at or above a specified speed (default is 20 m/s), in minutes
 #sust_dur: Duration sustained wind was at or above a specified speed (default is 20 m/s), in minutes
 
