@@ -6310,7 +6310,7 @@ h28pr$wind<-convert_wind_speed(h28pr$wind, old_metric = "kmph", new_metric = "kn
 
 #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Storm 29<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-h29pr<-mlist[[2]]
+h29pr<-mlist[[2]]                                                          #Hurricane Maria 2017
 h29pr<-as.data.table(h29pr)
 
 #Correct day
@@ -6514,6 +6514,19 @@ save(speed_list_puerto, file="speed_list_puerto.RData")
 load("speed_list_puerto.RData")
 
 ###################################################################Puerto Rico#######################################################################################
+
+#Wind speeds for Puerto Rico and Jamaica have been calculated. I need to use these to further develope the destruction index. 
+
+
+############INFORMATION ABOUT THE WIND SPEED CALCULATIONS###########
+
+
+#The maximum wind speed is measure in meters per second.
+#vmax_gust: Maximum 10-m 1-minute gust wind experienced at the grid point during the storm
+#vmax_sust: Maximum 10-m 1-minute sustained wind experienced at the grid point during the storm
+#gust_dur: Duration gust wind was at or above a specified speed (default is 20 m/s), in minutes
+#sust_dur: Duration sustained wind was at or above a specified speed (default is 20 m/s), in minutes
+
 
 
 ######################################Using world map to plot hurricanes in the Caribbean######################
