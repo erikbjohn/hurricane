@@ -1662,7 +1662,7 @@ write.table(cropset_at_full, file="cropset_at_full.csv",sep=",",row.names=F)
 
 
 
-
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>First attempts at naming locations<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 coords2country = function(points)
 {
@@ -1768,23 +1768,23 @@ points(-66.47917,18.47917,col='green') #This are is being recorded as NA but is 
 
 
 ###########>>>>>>>>>>>>>>>>Callin the file cropset_at_full from file for speed rathe than formulate by code each time<<<<<<<<<<<<<<<<<<<############
-
-cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\hurricane\\R\\hurricane\\R\\cropset_at_full.csv")
-colnames(cropset_at_full)[15]<-"Lat.y"
-colnames(cropset_at_full)[16]<-"Country Name"
-
-
-
-
-cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Paper Data\\cropset_at_full.csv")
-colnames(cropset_at_full)[15]<-"Lat.y"
-colnames(cropset_at_full)[16]<-"Country Name"
-
-#Convert the name column from factor to character 
-cropset_at_full$`Country Name`<-as.character(cropset_at_full$`Country Name`)
-
-cropset_at_full_list<-list()
-cropset_at_full_list<-(split(cropset_at_full, cropset_at_full$year , drop = TRUE))
+# 
+# cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Spatial tutorial material\\hurricane\\R\\hurricane\\R\\cropset_at_full.csv")
+# colnames(cropset_at_full)[15]<-"Lat.y"
+# colnames(cropset_at_full)[16]<-"Country Name"
+# 
+# 
+# 
+# 
+# cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Paper Data\\cropset_at_full.csv")
+# colnames(cropset_at_full)[15]<-"Lat.y"
+# colnames(cropset_at_full)[16]<-"Country Name"
+# 
+# #Convert the name column from factor to character 
+# cropset_at_full$`Country Name`<-as.character(cropset_at_full$`Country Name`)
+# 
+# cropset_at_full_list<-list()
+# cropset_at_full_list<-(split(cropset_at_full, cropset_at_full$year , drop = TRUE))
 
 
 
@@ -2400,6 +2400,9 @@ boxlist<-list(virbox, brbbox, colbox, ABbox, abwbox, bhsbox, blzbox, cribox, cub
 # cropset_at_full$`Country Name`[4431756:4569906]<-"Venezuela"
 # cropset_at_full$`Country Name`[4320298:4424477]<-"Venezuela"
 
+#>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>First attempt at naming the locations<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
 
 #This method of assigning names is more efficient than using the loop
 #Note that the shape files dont account for the rigidity in the shapes 
@@ -2456,7 +2459,7 @@ sum(length(which(is.na(cropset_at_full$`Country Name`))))
 
 write.table(cropset_at_full, file="cropset_at_full.csv",sep=",",row.names=F)
 
-
+cropset_at_full<-read.csv("C:\\Users\\goulb\\OneDrive\\Desktop\\Research 2018\\Paper Data\\cropset_at_full.csv")
 
 
 
@@ -6615,7 +6618,7 @@ full_track<- create_full_track(hurr_track = h1j, tint = 3) #3 hour intervals and
 
 
 
-#calculate the wind speed at each location at eash time point in the storm. S torm 1 jamaica
+#calculate the wind speed at each location at eash time point in the storm. Storm 1 jamaica
 full_track<-create_full_track(hurr_track = h1j, tint = 3)
 with_wind_radii <- add_wind_radii(full_track = full_track)
 head(with_wind_radii)
@@ -6629,8 +6632,78 @@ jam_winds<- bind_rows(jam_winds, .id = "gridid")
 
 
 
-#calculate forward speed of hurricane
-fs<-data.table()
-for(f in 1:nrow(full_track2)){
-  fs<-calc_forward_speed(full_track2$tclat[f], full_track2$tclon[f], full_track2$date[f], full_track2$tclat[f+1], full_track2$tclon[f+1], full_track2$date[f+1])
+
+########################################################Fix distance problem##########################################################
+#Merge by gridid and date
+
+jfix<-subset(jamaica, jamaica$Name=="ALLEN", drop= TRUE)
+jfix<-as.data.table(jfix)
+
+
+#Correct time
+
+jam_winds$time<-round(jam_winds$time, 0)
+
+for(f in 1: nrow(jam_winds))
+{
+  if(nchar(jam_winds$time[f])<2){
+    jam_winds$time[f]<-paste0("0",jam_winds$time[f])
+  }
+  #else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
 }
+
+
+for(f in 1: nrow(jam_winds))
+{
+  if(nchar(jam_winds$time[f])<2){
+    jam_winds$time[f]<-paste0("0",jam_winds$time[f])
+  }
+  else{jam_winds$time[f]<-paste0(jam_winds$time[f],"00")}
+}
+
+
+
+
+#######fix date on jam_winds
+wlsplit<-str_split_fixed(jam_winds$date, " ",2)
+
+wdatefix<-wlsplit[,1]
+wtimefix<-wlsplit[,2]
+wdsplit<- str_split_fixed(wdatefix, "-",3)
+
+
+#Need to separate the time variable into a more maliable formal
+wtimefix<-as.matrix(wtimefix)
+
+colnames(wtimefix)<-c("time")
+
+wtsplit<-str_split_fixed(wtimefix,":",3)
+
+
+
+
+jam_winds$month<-wdsplit[,2]
+jam_winds$day<-wdsplit[,3]
+jam_winds$time<-wlsplit[,2]
+jam_winds$year<-wdsplit[,1]
+#jam_winds$atlantic_cat345_id <- 1:nrow(atlantic_cat345)
+jam_winds$time<-wtsplit[,1]
+
+jam_winds$date<-NULL
+jam_winds$date<-paste0(jam_winds$year, jam_winds$month, jam_winds$day, jam_winds$time)
+
+
+colnames(jfix)<-"gridid"
+fix_distance<-merge(jam_winds, jfix, by= c("gridid", "date"), all= TRUE)
+fix_distance[4:7]<-NULL
+colnames(fix_distance)[4]<-"distance"
+colnames(fix_distance)[5]<-"name"
+colnames(fix_distance)[6]<-"hlat"
+colnames(fix_distance)[7]<-"hlon"
+colnames(fix_distance)[8]<-"wspeed at H"
+colnames(fix_distance)[9]<-"pop attribute"
+fix1<-na.omit(fix_distance)
+
+#We now have in one file the wind speeds at each centroid for hurricane ALLEN for Jamaica. As per the literature, only those points that were withing 500km
+#of the localities are relevant.
+
