@@ -6619,7 +6619,7 @@ full_track<- create_full_track(hurr_track = h1j, tint = 3) #3 hour intervals and
 
 
 #calculate the wind speed at each location at eash time point in the storm. Storm 1 jamaica
-full_track<-create_full_track(hurr_track = h1j, tint = 3)
+full_track<-create_full_track(hurr_track = h1j, tint = 3)    #Vmax here is the 10 meter sustained wind speed (m/s)
 with_wind_radii <- add_wind_radii(full_track = full_track)
 head(with_wind_radii)
 
@@ -6628,6 +6628,19 @@ jam_winds <- lapply(jam_points_list, FUN = calc_grid_wind,
                     with_wind_radii = with_wind_radii)
 names(jam_winds) <- try_ljam$gridid
 jam_winds<- bind_rows(jam_winds, .id = "gridid")
+
+####################################################Testing with another hurricanes###################################################
+
+full_track<-create_full_track(hurr_track = h2j, tint = 3)    #Vmax here is the 10 meter sustained wind speed (m/s)
+with_wind_radii <- add_wind_radii(full_track = full_track)
+head(with_wind_radii)
+
+jam_points_list <- split(try_ljam, f = try_ljam$gridid)
+jam_winds <- lapply(jam_points_list, FUN = calc_grid_wind,
+                    with_wind_radii = with_wind_radii)
+names(jam_winds) <- try_ljam$gridid
+jam_winds<- bind_rows(jam_winds, .id = "gridid")
+
 
 
 
@@ -6704,6 +6717,137 @@ colnames(fix_distance)[8]<-"wspeed at H"
 colnames(fix_distance)[9]<-"pop attribute"
 fix1<-na.omit(fix_distance)
 
+#Converting wind speed to knots
+fix1$`wspeed at H`<-convert_wind_speed(fix1$`wspeed at H`, old_metric = "kmph", new_metric = "knots", round = NULL)
+
+
+#####################################################Testing with Gilbert##############################################################
+
+jfix<-subset(jamaica, jamaica$Name=="GILBERT", drop= TRUE)
+jfix<-as.data.table(jfix)
+
+#Correct day
+for(f in 1: nrow(jfix))
+{
+  if(nchar(jfix$day[f])<2){
+    jfix$day[f]<-paste0("0",jfix$day[f])
+  }
+  #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
+}
+
+
+#Correct month
+for(f in 1: nrow(jfix))
+{
+  if(nchar(jfix$month[f])<2){
+    jfix$month[f]<-paste0("0",jfix$month[f])
+  }
+  #else{ stwind_jam$day[f]<-paste0(stwind_jam$day[f],"00")}
+}
+
+#Correct time
+
+jfix$time<-round(jfix$time, 0)
+
+for(f in 1: nrow(jfix))
+{
+  if(nchar(jfix$time[f])<2){
+    jfix$time[f]<-paste0("0",jfix$time[f])
+  }
+  #else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
+}
+
+
+for(f in 1: nrow(jfix))
+{
+  if(nchar(jfix$time[f])<2){
+    jfix$time[f]<-paste0("0",jfix$time[f])
+  }
+  else{jfix$time[f]<-paste0(jfix$time[f],"00")}
+}
+
+
+
+jfix$date<-paste0(jfix$year,jfix$month,jfix$day, jfix$time)
+jfix<-as.data.frame(jfix)
+jfix[2]<-NULL
+jfix[3]<-NULL
+jfix[7:10]<-NULL
+jfix[10]<-NULL
+#Reorder the dataframe
+
+
+
+
+
+
+
+
+#######fix date on jam_winds
+wlsplit<-str_split_fixed(jam_winds$date, " ",2)
+
+wdatefix<-wlsplit[,1]
+wtimefix<-wlsplit[,2]
+wdsplit<- str_split_fixed(wdatefix, "-",3)
+
+
+#Need to separate the time variable into a more maliable formal
+wtimefix<-as.matrix(wtimefix)
+
+colnames(wtimefix)<-c("time")
+
+wtsplit<-str_split_fixed(wtimefix,":",3)
+
+
+
+
+jam_winds$month<-wdsplit[,2]
+jam_winds$day<-wdsplit[,3]
+jam_winds$time<-wlsplit[,2]
+jam_winds$year<-wdsplit[,1]
+#jam_winds$atlantic_cat345_id <- 1:nrow(atlantic_cat345)
+jam_winds$time<-wtsplit[,1]
+
+jam_winds$date<-NULL
+jam_winds$date<-paste0(jam_winds$year, jam_winds$month, jam_winds$day, jam_winds$time)
+
+
+#Correct time
+
+#jam_winds$time<-round(jam_winds$time, 0)
+
+for(f in 1: nrow(jam_winds))
+{
+  if(nchar(jam_winds$time[f])<2){
+    jam_winds$time[f]<-paste0("0",jam_winds$time[f])
+  }
+  #else{ stwind_jam$time[f]<-paste0(stwind_jam$time[f],"00")}
+}
+
+
+for(f in 1: nrow(jam_winds))
+{
+  if(nchar(jam_winds$time[f])<2){
+    jam_winds$time[f]<-paste0("0",jam_winds$time[f])
+  }
+  else{jam_winds$time[f]<-paste0(jam_winds$time[f],"00")}
+}
+
+
+
+
+
+colnames(jfix)[1]<-"gridid"
+fix_distance<-merge(jam_winds, jfix, by= c("gridid", "date"), all= TRUE)
+fix_distance[4:7]<-NULL
+colnames(fix_distance)[8]<-"wspeed at H"
+colnames(fix_distance)[9]<-"pop attribute"
+fix1<-na.omit(fix_distance)
+
+#Converting wind speed to knots
+fix1$`wspeed at H`<-convert_wind_speed(fix1$`wspeed at H`, old_metric = "kmph", new_metric = "knots", round = NULL)
+
+
+
 #We now have in one file the wind speeds at each centroid for hurricane ALLEN for Jamaica. As per the literature, only those points that were withing 500km
 #of the localities are relevant.
-
